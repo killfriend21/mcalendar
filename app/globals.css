@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground: #1F2937;
+  --background: #FFFFFF;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+/* React Big Calendar Overrides */
+.rbc-calendar {
+  font-family: inherit;
+}
+
+.rbc-header {
+  padding: 12px 8px;
+  font-weight: 600;
+  color: #6B7280;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.rbc-today {
+  background-color: #eff6ff !important;
+}
+
+.rbc-event {
+  background-color: #3B82F6;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+}
+
+.rbc-event.rbc-selected {
+  background-color: #2563EB;
+}
+
+.rbc-day-slot .rbc-time-slot {
+  border-top: 1px solid #F3F4F6;
+}
+
+.rbc-time-content {
+  border-top: 1px solid #E5E7EB;
+}
+
+.rbc-time-header-content {
+  border-left: 1px solid #E5E7EB;
+}
+
+.rbc-time-view {
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.rbc-month-view {
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.rbc-day-bg + .rbc-day-bg {
+  border-left: 1px solid #E5E7EB;
+}
+
+.rbc-month-row + .rbc-month-row {
+  border-top: 1px solid #E5E7EB;
+}
+
+/* Weekend styling */
+.rbc-saturday,
+.rbc-sunday {
+  background-color: #e5e7eb !important;
+}
+
+.rbc-time-header .rbc-saturday,
+.rbc-time-header .rbc-sunday,
+.rbc-month-row .rbc-saturday,
+.rbc-month-row .rbc-sunday {
+  background-color: #e5e7eb !important;
+}
+
+/* Off-range days (days not in current month) */
+.rbc-off-range-bg {
+  background-color: #e5e7eb !important;
+}
+
+.rbc-calendar .rbc-date-cell.rbc-off-range span {
+  color: #9ca3af !important;
+}

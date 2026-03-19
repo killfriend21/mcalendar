@@ -1,0 +1,23 @@
+// Prisma Schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Schedule {
+  id          Int      @id @default(autoincrement())
+  date        DateTime
+  endDate     DateTime?
+  projectName String
+  teamName    String
+  peopleCount Int
+  members     String
+  shift       String   @default("เช้า")
+  notes       String?
+  color       String   @default("#3B82F6")
+  createdAt   DateTime @default(now())
+}

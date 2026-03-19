@@ -1,0 +1,43 @@
+# Dependencies
+node_modules
+node_modules.bak
+
+# Next.js
+.next
+out
+build
+*.tsbuildinfo
+next-env.d.ts
+
+# Prisma
+prisma/dev.db
+prisma/dev.db-journal
+
+# Development
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Testing
+coverage
+.nyc_output
+
+# Misc
+*.pem
+dist
+.cache

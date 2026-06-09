@@ -1,11 +1,7 @@
-FROM node:20-alpine AS deps
-WORKDIR /app
-RUN apk add --no-cache libc6-compat
-COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts
-
 FROM node:20-alpine
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+RUN apk add --no-cache libc6-compat openssl
+COPY package.json package-lock.json ./
 COPY prisma ./prisma
+RUN npm ci
 CMD ["npx", "prisma", "db", "push", "--accept-data-loss"]

@@ -7,6 +7,8 @@ services:
       POSTGRES_USER: factory_user
       POSTGRES_PASSWORD: factory_password
       POSTGRES_DB: factory_calendar
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped

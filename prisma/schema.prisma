@@ -21,3 +21,62 @@ model Schedule {
   color       String   @default("#3B82F6")
   createdAt   DateTime @default(now())
 }
+
+model Leave {
+  id        Int      @id @default(autoincrement())
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime @default(now())
+}
+
+model Member {
+  id        Int      @id @default(autoincrement())
+  name      String
+  role      String?
+  createdAt DateTime @default(now())
+}
+
+model Project {
+  id        Int      @id @default(autoincrement())
+  name      String
+  color     String   @default("#3B82F6")
+  createdAt DateTime @default(now())
+}
+
+model CompanyHoliday {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  name      String
+  color     String   @default("#FEF3C7")
+  createdAt DateTime @default(now())
+}
+
+model ProjectTask {
+  id          Int            @id @default(autoincrement())
+  projectName String
+  title       String
+  month       String
+  dueDate     DateTime?
+  done        Boolean        @default(false)
+  order       Int            @default(0)
+  parentId    Int?
+  members     String?
+  scheduleId  Int?
+  parent      ProjectTask?   @relation("SubTasks", fields: [parentId], references: [id], onDelete: Cascade)
+  children    ProjectTask[]  @relation("SubTasks")
+  createdAt   DateTime       @default(now())
+}
+
+model StockWatch {
+  id        Int      @id @default(autoincrement())
+  symbol    String   @unique
+  label     String?
+  createdAt DateTime @default(now())
+}
+
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

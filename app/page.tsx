@@ -53,13 +53,13 @@ function StockWidget({ refreshInterval = 120, slideInterval = 60 }: { refreshInt
       const res = await fetch(`/api/stock?symbol=${encodeURIComponent(sym)}`)
       const d = await res.json()
       if (d.error) {
-        setErrorSymbols(prev => new Set([...prev, sym]))
+        setErrorSymbols(prev => { const s = new Set(prev); s.add(sym); return s })
       } else {
         setStockCache(prev => ({ ...prev, [sym]: d }))
         setErrorSymbols(prev => { const s = new Set(prev); s.delete(sym); return s })
       }
     } catch {
-      setErrorSymbols(prev => new Set([...prev, sym]))
+      setErrorSymbols(prev => { const s = new Set(prev); s.add(sym); return s })
     } finally {
       fetchingRef.current.delete(sym)
     }

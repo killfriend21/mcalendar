@@ -18,6 +18,17 @@ services:
       timeout: 5s
       retries: 5
 
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile.migrate
+    environment:
+      - DATABASE_URL=postgresql://factory_user:factory_password@db:5432/factory_calendar?schema=public
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
   next-app:
     build:
       context: .
@@ -30,6 +41,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]

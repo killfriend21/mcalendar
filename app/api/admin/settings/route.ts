@@ -5,6 +5,7 @@ const DEFAULTS: Record<string, string> = {
   stockEnabled: 'false',
   stockRefreshInterval: '120',
   stockSlideInterval: '60',
+  showLeavesInCalendar: 'true',
 }
 
 export async function GET() {

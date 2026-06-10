@@ -425,10 +425,19 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
               >
                 <div className="flex items-center justify-between px-1">
                   <span className={`text-xs ${isToday ? 'font-bold text-blue-600' : !inMonth ? 'text-gray-300' : 'text-gray-500'}`}>{day.format('D')}</span>
-                  {dayLeaves.length > 0 && (
-                    <span className="text-[10px]" title={dayLeaves.map(l => l.name).join(', ')}>🏖</span>
-                  )}
                 </div>
+                {dayLeaves.length > 0 && (
+                  <div className="flex flex-wrap gap-0.5 px-1 mt-0.5">
+                    {dayLeaves.slice(0, 2).map(l => (
+                      <span key={l.id} style={{ fontSize: '9px', background: '#FDE68A', color: '#92400E', borderRadius: '4px', padding: '0 4px', lineHeight: '14px', fontWeight: 600 }}>
+                        🏖 {l.name}
+                      </span>
+                    ))}
+                    {dayLeaves.length > 2 && (
+                      <span style={{ fontSize: '9px', color: '#92400E', fontWeight: 600 }}>+{dayLeaves.length - 2}</span>
+                    )}
+                  </div>
+                )}
                 <div className="flex flex-col gap-0.5 mt-0.5">
                   {daySchedules.slice(0, 4).map(s => {
                     const color = projects.find(p => p.name === s.projectName)?.color || s.color || '#3B82F6'
@@ -462,7 +471,7 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
   )
 }
 
-function QuarterView({ currentDate, schedules, projects, leaves, projectTasks, isCompanyHoliday, onSelectDate }: {
+function QuarterView({ currentDate, schedules, projects, leaves, projectTasks, isCompanyHoliday, onSelectDate, showLeaves }: {
   currentDate: Date
   schedules: Schedule[]
   projects: { id: number; name: string; color: string }[]
@@ -470,6 +479,7 @@ function QuarterView({ currentDate, schedules, projects, leaves, projectTasks, i
   projectTasks: ProjectTask[]
   isCompanyHoliday: (date: Date) => { date: string; name: string; color: string } | undefined
   onSelectDate: (date: Date) => void
+  showLeaves: boolean
 }) {
   const quarterStart = getQuarterStart(currentDate)
   const months = [0, 1, 2].map(i => moment(quarterStart).add(i, 'months'))
@@ -484,6 +494,7 @@ function QuarterView({ currentDate, schedules, projects, leaves, projectTasks, i
   }
 
   const getDayLeaves = (date: Date) => {
+    if (!showLeaves) return []
     const dayStr = moment(date).format('YYYY-MM-DD')
     return leaves.filter(l => dayStr >= moment(l.startDate).format('YYYY-MM-DD') && dayStr <= moment(l.endDate).format('YYYY-MM-DD'))
   }
@@ -551,7 +562,7 @@ export default function Home() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [calendarMode, setCalendarMode] = useState<'month' | 'quarter'>('month')
   const [calendarView, setCalendarView] = useState<View>(Views.MONTH)
-  const [showLeavesInCalendar, setShowLeavesInCalendar] = useState(false)
+  const [showLeavesInCalendar, setShowLeavesInCalendar] = useState(true)
 
   // Leave state
   const [leaves, setLeaves] = useState<Leave[]>([])
@@ -574,6 +585,7 @@ export default function Home() {
         setStockEnabled(d.stockEnabled === 'true')
         setStockRefreshInterval(Number(d.stockRefreshInterval) || 120)
         setStockSlideInterval(Number(d.stockSlideInterval) || 60)
+        setShowLeavesInCalendar(d.showLeavesInCalendar !== 'false')
       })
       .catch(() => {})
   }, [])
@@ -589,6 +601,11 @@ export default function Home() {
   const [viewingTask, setViewingTask] = useState<ProjectTask | null>(null)
 
   const currentMonth = moment(currentDate).format('YYYY-MM')
+
+  const visibleRange = calendarMode === 'quarter'
+    ? { start: getQuarterStart(currentDate), end: moment(getQuarterStart(currentDate)).add(3, 'months') }
+    : { start: moment(currentDate).startOf('month'), end: moment(currentDate).add(1, 'month').startOf('month') }
+  const visibleLeaves = leaves.filter(l => moment(l.startDate).isBefore(visibleRange.end) && moment(l.endDate).isSameOrAfter(visibleRange.start))
 
   const fetchProjectTasks = useCallback(async () => {
     try {
@@ -948,18 +965,6 @@ export default function Home() {
             >
               ไตรมาส
             </button>
-            <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
-              <span>แสดงวันลาใน calendar</span>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={showLeavesInCalendar}
-                onClick={() => setShowLeavesInCalendar(v => !v)}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${showLeavesInCalendar ? 'bg-blue-600' : 'bg-gray-300'}`}
-              >
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showLeavesInCalendar ? 'translate-x-4' : 'translate-x-1'}`} />
-              </button>
-            </label>
             <button
               onClick={() => {
                 resetForm()
@@ -989,6 +994,7 @@ export default function Home() {
                   leaves={leaves}
                   projectTasks={projectTasks}
                   isCompanyHoliday={isCompanyHoliday}
+                  showLeaves={showLeavesInCalendar}
                   onSelectDate={(date) => {
                     setCurrentDate(date)
                     setCalendarMode('month')
@@ -1389,7 +1395,7 @@ export default function Home() {
             </button>
           </div>
           <div className="flex-1 overflow-y-auto">
-            {leaves.length === 0 ? (
+            {visibleLeaves.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-6">ไม่มีข้อมูล</p>
             ) : (
               <table className="w-full text-sm">
@@ -1401,7 +1407,7 @@ export default function Home() {
                   </tr>
                 </thead>
                 <tbody>
-                  {leaves.map(leave => {
+                  {visibleLeaves.map(leave => {
                     const isPast = new Date(leave.endDate) < new Date(new Date().setHours(0,0,0,0))
                     return (
                       <tr key={leave.id} className="border-t border-gray-50 hover:bg-gray-50 group">

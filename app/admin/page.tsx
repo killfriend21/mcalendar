@@ -9,7 +9,7 @@ interface Member { id: number; name: string; role: string | null }
 interface Project { id: number; name: string; color: string }
 interface CompanyHoliday { id: number; date: string; name: string }
 
-type Tab = 'members' | 'projects' | 'holidays' | 'stocks'
+type Tab = 'members' | 'projects' | 'holidays' | 'stocks' | 'general'
 
 // ─── Shared modal shell ───────────────────────────────────
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
@@ -659,6 +659,56 @@ function StocksTab() {
   )
 }
 
+// ─── General Tab ──────────────────────────────────────────
+function GeneralTab() {
+  const [settings, setSettings] = useState({ showLeavesInCalendar: 'true' })
+  const [savingSettings, setSavingSettings] = useState(false)
+
+  const fetchSettings = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/settings')
+      if (!res.ok) return
+      const data = await res.json()
+      setSettings(s => ({ ...s, ...data }))
+    } catch {}
+  }, [])
+
+  useEffect(() => { fetchSettings() }, [fetchSettings])
+
+  const saveSettings = async (patch: Partial<typeof settings>) => {
+    setSavingSettings(true)
+    setSettings(s => ({ ...s, ...patch }))
+    try {
+      await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      })
+    } catch {}
+    setSavingSettings(false)
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-4">
+      <h3 className="text-sm font-semibold text-gray-700">ตั้งค่าทั่วไป</h3>
+
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-700">แสดงวันลาใน calendar</p>
+          <p className="text-xs text-gray-400">แสดง badge วันลาบนตารางปฏิทิน (เดือน/ไตรมาส)</p>
+        </div>
+        <button
+          onClick={() => saveSettings({ showLeavesInCalendar: settings.showLeavesInCalendar === 'true' ? 'false' : 'true' })}
+          disabled={savingSettings}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.showLeavesInCalendar === 'true' ? 'bg-blue-600' : 'bg-gray-300'}`}
+        >
+          <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${settings.showLeavesInCalendar === 'true' ? 'translate-x-6' : 'translate-x-1'}`} />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main Admin Page ──────────────────────────────────────
 export default function AdminPage() {
   const [tab, setTab] = useState<Tab>('members')
@@ -668,6 +718,7 @@ export default function AdminPage() {
     { key: 'projects', label: 'โปรเจกต์' },
     { key: 'holidays', label: 'วันหยุดบริษัท' },
     { key: 'stocks', label: 'หุ้น' },
+    { key: 'general', label: 'ทั่วไป' },
   ]
 
   return (
@@ -705,6 +756,7 @@ export default function AdminPage() {
         {tab === 'projects' && <ProjectsTab />}
         {tab === 'holidays' && <HolidaysTab />}
         {tab === 'stocks' && <StocksTab />}
+        {tab === 'general' && <GeneralTab />}
       </div>
     </div>
   )

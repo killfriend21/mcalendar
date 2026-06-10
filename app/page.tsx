@@ -375,8 +375,7 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
             const isToday = day.isSame(moment(), 'day')
             let bg = '#FFFFFF'
             if (holiday) bg = '#FEE2E2'
-            else if (dow === 0) bg = '#D1D5DB'
-            else if (isWeekend) bg = '#F3F4F6'
+            else if (isWeekend) bg = '#D1D5DB'
             return (
               <div
                 key={i}
@@ -384,14 +383,14 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
                 className="border-b border-r border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors overflow-hidden min-w-0"
                 style={{
                   height: '110px',
-                  backgroundColor: !inMonth ? '#FAFAFA' : bg,
+                  backgroundColor: bg,
+                  backgroundImage: !inMonth ? 'repeating-linear-gradient(45deg, rgba(255,255,255,0.6) 0px, rgba(255,255,255,0.6) 6px, transparent 6px, transparent 12px)' : undefined,
                   padding: '4px',
-                  opacity: inMonth ? 1 : 0.35,
                   ...(isToday && { boxShadow: 'inset 0 0 0 2px #F97316' }),
                 }}
               >
                 <div className="flex items-center justify-between px-1">
-                  <span className={`text-xs ${isToday ? 'font-bold text-blue-600' : 'text-gray-500'}`}>{day.format('D')}</span>
+                  <span className={`text-xs ${isToday ? 'font-bold text-blue-600' : !inMonth ? 'text-gray-300' : 'text-gray-500'}`}>{day.format('D')}</span>
                   {dayLeaves.length > 0 && (
                     <span className="text-[10px]" title={dayLeaves.map(l => l.name).join(', ')}>🏖</span>
                   )}
@@ -1059,10 +1058,8 @@ export default function Home() {
                 const style: React.CSSProperties = {}
                 if (companyHoliday) {
                   style.backgroundColor = '#FEE2E2'
-                } else if (day === 0) {
+                } else if (day === 0 || day === 6) {
                   style.backgroundColor = '#D1D5DB'
-                } else if (day === 6) {
-                  style.backgroundColor = '#e5e7eb'
                 }
                 if (moment(date).isSame(new Date(), 'day')) {
                   style.boxShadow = 'inset 0 0 0 2px #F97316'

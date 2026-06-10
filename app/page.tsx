@@ -243,7 +243,6 @@ function DateCellWrapper({ children, value, leaves }: { children: React.ReactNod
   const styledChild = React.cloneElement(child, {
     style: { ...child.props.style, height: '100%', width: '100%' },
   })
-  const isToday = moment(value).isSame(new Date(), 'day')
   return (
     <div
       className={child.props.className}
@@ -252,7 +251,6 @@ function DateCellWrapper({ children, value, leaves }: { children: React.ReactNod
         height: '100%',
         flex: '1 1 0%',
         width: '100%',
-        ...(isToday && { boxShadow: 'inset 0 0 0 2px #2563EB', zIndex: 2 }),
       }}
     >
       {styledChild}
@@ -377,13 +375,20 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
             const isToday = day.isSame(moment(), 'day')
             let bg = '#FFFFFF'
             if (holiday) bg = '#FEE2E2'
+            else if (dow === 0) bg = '#D1D5DB'
             else if (isWeekend) bg = '#F3F4F6'
             return (
               <div
                 key={i}
                 onClick={() => onSelectDate(dateObj)}
                 className="border-b border-r border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors overflow-hidden min-w-0"
-                style={{ height: '110px', backgroundColor: !inMonth ? '#FAFAFA' : bg, padding: '4px', opacity: inMonth ? 1 : 0.35 }}
+                style={{
+                  height: '110px',
+                  backgroundColor: !inMonth ? '#FAFAFA' : bg,
+                  padding: '4px',
+                  opacity: inMonth ? 1 : 0.35,
+                  ...(isToday && { boxShadow: 'inset 0 0 0 2px #F97316' }),
+                }}
               >
                 <div className="flex items-center justify-between px-1">
                   <span className={`text-xs ${isToday ? 'font-bold text-blue-600' : 'text-gray-500'}`}>{day.format('D')}</span>
@@ -1051,13 +1056,19 @@ export default function Home() {
               dayPropGetter={(date: Date) => {
                 const day = date.getDay()
                 const companyHoliday = isCompanyHoliday(date)
+                const style: React.CSSProperties = {}
                 if (companyHoliday) {
-                  return { style: { backgroundColor: '#FEE2E2' } }
+                  style.backgroundColor = '#FEE2E2'
+                } else if (day === 0) {
+                  style.backgroundColor = '#D1D5DB'
+                } else if (day === 6) {
+                  style.backgroundColor = '#e5e7eb'
                 }
-                if (day === 0 || day === 6) {
-                  return { style: { backgroundColor: '#e5e7eb' } }
+                if (moment(date).isSame(new Date(), 'day')) {
+                  style.boxShadow = 'inset 0 0 0 2px #F97316'
+                  style.zIndex = 2
                 }
-                return {}
+                return { style }
               }}
               getNow={() => new Date()}
               components={{

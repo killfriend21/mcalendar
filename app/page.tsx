@@ -276,6 +276,39 @@ function DateCellWrapper({ children, value, leaves }: { children: React.ReactNod
   )
 }
 
+function WeekNumberGutter({ currentDate }: { currentDate: Date }) {
+  const gridStart = moment(currentDate).startOf('month').startOf('week')
+  const gridEnd = moment(currentDate).endOf('month').endOf('week')
+  const weekCount = gridEnd.diff(gridStart, 'weeks') + 1
+  const weekNumbers = Array.from({ length: weekCount }, (_, i) => moment(gridStart).add(i, 'weeks').isoWeek())
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', width: '32px', flexShrink: 0 }}>
+      <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '0 3px', textAlign: 'center', fontWeight: 'bold', fontSize: '90%', minHeight: 0, borderBottom: '1px solid #DDD' }}>
+        Wk
+      </div>
+      {weekNumbers.map((wk, i) => (
+        <div
+          key={i}
+          style={{
+            flex: '1 0 0%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '11px',
+            fontWeight: 600,
+            color: '#2563EB',
+            borderBottom: i < weekNumbers.length - 1 ? '1px solid #DDD' : 'none',
+            borderRight: '1px solid #DDD',
+          }}
+        >
+          {wk}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function getQuarterStart(date: Date) {
   const q = Math.floor(date.getMonth() / 3)
   return moment(date).month(q * 3).startOf('month')
@@ -334,7 +367,7 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
       </div>
       {weeks.map((week, wi) => (
         <div key={wi} className="grid" style={{ gridTemplateColumns: '28px repeat(7, 1fr)' }}>
-          <div className="flex items-center justify-center text-[10px] text-gray-400 border-b border-r border-gray-100 bg-gray-50">
+          <div className="flex items-center justify-center text-[11px] font-semibold text-blue-600 border-b border-r border-gray-100 bg-gray-50">
             {week[0].isoWeek()}
           </div>
           {week.map((day, i) => {
@@ -661,14 +694,8 @@ export default function Home() {
 
   const HolidayDateHeader = useCallback(({ date, label }: { date: Date; label: string }) => {
     const holiday = isCompanyHoliday(date)
-    const isWeekStart = moment(date).day() === 0
     return (
       <div style={{ textAlign: 'right', padding: '0 4px', lineHeight: 1, position: 'relative' }}>
-        {isWeekStart && (
-          <span style={{ position: 'absolute', left: 4, top: 0, fontSize: '10px', color: '#9CA3AF', fontWeight: 600 }}>
-            wk{moment(date).isoWeek()}
-          </span>
-        )}
         <span style={{ fontSize: '12px' }}>{label}</span>
         {holiday && (
           <div title={holiday.name} style={{ fontSize: '11px', color: '#DC2626', fontWeight: 700, lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -987,12 +1014,14 @@ export default function Home() {
               />
             </>
           ) : (
-            <Calendar
+            <div style={{ display: 'flex', height: '70vh' }}>
+              {calendarView === Views.MONTH && <WeekNumberGutter currentDate={currentDate} />}
+              <Calendar
               localizer={localizer}
               events={events}
               startAccessor="start"
               endAccessor="end"
-              style={{ height: '70vh' }}
+              style={{ height: '100%', flex: 1, minWidth: 0 }}
               views={[Views.MONTH, Views.WEEK, Views.DAY]}
               view={calendarView}
               onView={setCalendarView}
@@ -1031,7 +1060,8 @@ export default function Home() {
                   ),
                 }),
               }}
-            />
+              />
+            </div>
           )}
         </div>
 

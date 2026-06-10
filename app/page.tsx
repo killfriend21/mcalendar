@@ -415,7 +415,7 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
               <div
                 key={i}
                 onClick={() => onSelectDate(dateObj)}
-                className="border-b border-r border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors overflow-hidden min-w-0"
+                className="border-b border-r border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors overflow-hidden min-w-0 flex flex-col"
                 style={{
                   height: '150px',
                   backgroundColor: bg,
@@ -426,19 +426,7 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
                 <div className="flex items-center justify-between px-1">
                   <span className={`text-xs ${isToday ? 'font-bold text-blue-600' : !inMonth ? 'text-gray-300' : 'text-gray-500'}`}>{day.format('D')}</span>
                 </div>
-                {dayLeaves.length > 0 && (
-                  <div className="flex flex-wrap gap-0.5 px-1 mt-0.5">
-                    {dayLeaves.slice(0, 2).map(l => (
-                      <span key={l.id} style={{ fontSize: '9px', background: '#FDE68A', color: '#92400E', borderRadius: '4px', padding: '0 4px', lineHeight: '14px', fontWeight: 600 }}>
-                        🏖 {l.name}
-                      </span>
-                    ))}
-                    {dayLeaves.length > 2 && (
-                      <span style={{ fontSize: '9px', color: '#92400E', fontWeight: 600 }}>+{dayLeaves.length - 2}</span>
-                    )}
-                  </div>
-                )}
-                <div className="flex flex-col gap-0.5 mt-0.5">
+                <div className="flex flex-col gap-0.5 mt-0.5 flex-1 overflow-hidden">
                   {daySchedules.slice(0, 4).map(s => {
                     const color = projects.find(p => p.name === s.projectName)?.color || s.color || '#3B82F6'
                     const members = s.members
@@ -462,6 +450,16 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
                     <div className="text-[10px] text-gray-400 px-1">+{daySchedules.length - 4}</div>
                   )}
                 </div>
+                {dayLeaves.length > 0 && (
+                  <div className="flex items-center gap-0.5 px-1 mt-0.5 flex-shrink-0">
+                    {dayLeaves.slice(0, 4).map(l => (
+                      <span key={l.id} title={l.name} style={{ fontSize: '11px', lineHeight: '12px' }}>🏖</span>
+                    ))}
+                    {dayLeaves.length > 4 && (
+                      <span style={{ fontSize: '9px', color: '#92400E', fontWeight: 600 }}>+{dayLeaves.length - 4}</span>
+                    )}
+                  </div>
+                )}
               </div>
             )
           })}

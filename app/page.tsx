@@ -289,15 +289,13 @@ function DateCellWrapper({ children, value, leaves }: { children: React.ReactNod
     >
       {styledChild}
       {dayLeaves.length > 0 && (
-        <div style={{ position: 'absolute', bottom: 2, left: 2, right: 2, display: 'flex', flexWrap: 'wrap', gap: '2px', pointerEvents: 'none', zIndex: 1 }}>
-          {dayLeaves.slice(0, 2).map(l => (
-            <span key={l.id} style={{ fontSize: '9px', background: '#FDE68A', color: '#92400E', borderRadius: '4px', padding: '0 4px', lineHeight: '14px', fontWeight: 600 }}>
-              🏖 {l.name}
-            </span>
-          ))}
-          {dayLeaves.length > 2 && (
-            <span style={{ fontSize: '9px', color: '#92400E', fontWeight: 600 }}>+{dayLeaves.length - 2}</span>
-          )}
+        <div style={{ position: 'absolute', bottom: 2, left: 2, right: 2, display: 'flex', zIndex: 1 }}>
+          <span
+            title={dayLeaves.map(l => l.name).join(', ')}
+            style={{ fontSize: '9px', background: '#FDE68A', color: '#92400E', borderRadius: '4px', padding: '0 4px', lineHeight: '14px', fontWeight: 600, pointerEvents: 'auto', cursor: 'default' }}
+          >
+            🏖{dayLeaves.length > 1 ? ` ${dayLeaves.length}` : ''}
+          </span>
         </div>
       )}
     </div>
@@ -451,13 +449,10 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
                   )}
                 </div>
                 {inMonth && dayLeaves.length > 0 && (
-                  <div className="flex items-center gap-0.5 px-1 mt-0.5 flex-shrink-0">
-                    {dayLeaves.slice(0, 4).map(l => (
-                      <span key={l.id} title={l.name} style={{ fontSize: '11px', lineHeight: '12px' }}>🏖</span>
-                    ))}
-                    {dayLeaves.length > 4 && (
-                      <span style={{ fontSize: '9px', color: '#92400E', fontWeight: 600 }}>+{dayLeaves.length - 4}</span>
-                    )}
+                  <div className="flex items-center px-1 mt-0.5 flex-shrink-0">
+                    <span title={dayLeaves.map(l => l.name).join(', ')} style={{ fontSize: '11px', lineHeight: '12px', cursor: 'default' }}>
+                      🏖{dayLeaves.length > 1 ? ` ${dayLeaves.length}` : ''}
+                    </span>
                   </div>
                 )}
               </div>

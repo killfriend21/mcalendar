@@ -298,14 +298,13 @@ function QuarterToolbar({ currentDate, onPrev, onNext, onToday }: { currentDate:
   )
 }
 
-function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHoliday, projects, onSelectDate, className }: {
+function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHoliday, projects, onSelectDate }: {
   monthStart: moment.Moment
   getDaySchedules: (date: Date) => Schedule[]
   getDayLeaves: (date: Date) => Leave[]
   isCompanyHoliday: (date: Date) => { date: string; name: string; color: string } | undefined
   projects: { id: number; name: string; color: string }[]
   onSelectDate: (date: Date) => void
-  className?: string
 }) {
   const startOfGrid = moment(monthStart).startOf('week')
   const endOfGrid = moment(monthStart).endOf('month').endOf('week')
@@ -322,7 +321,7 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
   }
 
   return (
-    <div className={`border border-gray-200 rounded-lg overflow-hidden ${className || ''}`}>
+    <div className="border border-gray-200 rounded-lg overflow-hidden">
       <div className="bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700 border-b border-gray-200 text-center">
         {monthStart.format('MMMM YYYY')}
       </div>
@@ -412,7 +411,7 @@ function QuarterView({ currentDate, schedules, projects, leaves, isCompanyHolida
 
   return (
     <div className="grid grid-cols-2 gap-4">
-      {months.map((monthStart, i) => (
+      {months.map(monthStart => (
         <MonthMiniGrid
           key={monthStart.format('YYYY-MM')}
           monthStart={monthStart}
@@ -421,7 +420,6 @@ function QuarterView({ currentDate, schedules, projects, leaves, isCompanyHolida
           isCompanyHoliday={isCompanyHoliday}
           projects={projects}
           onSelectDate={onSelectDate}
-          className={i === 2 ? 'col-span-2' : ''}
         />
       ))}
     </div>

@@ -595,6 +595,10 @@ export default function Home() {
 
   const currentMonth = moment(currentDate).format('YYYY-MM')
 
+  const visibleMonths = calendarMode === 'quarter'
+    ? [0, 1, 2].map(i => moment(getQuarterStart(currentDate)).add(i, 'months').format('YYYY-MM'))
+    : [currentMonth]
+
   const visibleRange = calendarMode === 'quarter'
     ? { start: getQuarterStart(currentDate), end: moment(getQuarterStart(currentDate)).add(3, 'months') }
     : { start: moment(currentDate).startOf('month'), end: moment(currentDate).add(1, 'month').startOf('month') }
@@ -1256,7 +1260,7 @@ export default function Home() {
             </div>
           </div>
           <div className="flex-1 overflow-y-auto">
-            {projectTasks.filter(t => t.parentId === null && t.month === currentMonth).length === 0 ? (
+            {projectTasks.filter(t => t.parentId === null && visibleMonths.includes(t.month)).length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center px-4">
                 <p className="text-sm text-gray-400">ยังไม่มีงาน</p>
                 <button onClick={openAddTask} className="mt-3 text-xs text-indigo-600 hover:underline">+ เพิ่มงานแรก</button>
@@ -1326,7 +1330,7 @@ export default function Home() {
                 }
 
                 const grouped = projectTasks
-                  .filter(t => t.parentId === null && t.month === currentMonth)
+                  .filter(t => t.parentId === null && visibleMonths.includes(t.month))
                   .reduce<Record<string, ProjectTask[]>>((acc, t) => {
                     if (!acc[t.projectName]) acc[t.projectName] = []
                     acc[t.projectName].push(t)

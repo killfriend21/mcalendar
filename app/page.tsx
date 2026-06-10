@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
-import { Calendar, momentLocalizer, Views } from 'react-big-calendar'
+import { Calendar, momentLocalizer, Views, View } from 'react-big-calendar'
 import moment from 'moment'
 import 'moment/locale/th'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
@@ -207,7 +207,7 @@ function StockWidget({ refreshInterval = 120, slideInterval = 60 }: { refreshInt
 
 const VIEW_LABELS: Record<string, string> = {
   month: 'เดือน',
-  work_week: 'สัปดาห์ทำงาน',
+  work_week: 'Work Week',
   week: 'สัปดาห์',
   day: 'วัน',
 }
@@ -251,6 +251,28 @@ function CustomToolbar({ label, onNavigate, onView, view, views, date }: any) {
           Today
         </button>
       </div>
+    </div>
+  )
+}
+
+function DateCellWrapper({ children, value, leaves }: { children: React.ReactNode; value: Date; leaves: Leave[] }) {
+  const dayStr = moment(value).format('YYYY-MM-DD')
+  const dayLeaves = leaves.filter(l => dayStr >= l.startDate && dayStr <= l.endDate)
+  return (
+    <div style={{ position: 'relative', height: '100%' }}>
+      {children}
+      {dayLeaves.length > 0 && (
+        <div style={{ position: 'absolute', bottom: 2, left: 2, right: 2, display: 'flex', flexWrap: 'wrap', gap: '2px', pointerEvents: 'none', zIndex: 1 }}>
+          {dayLeaves.slice(0, 2).map(l => (
+            <span key={l.id} style={{ fontSize: '9px', background: '#FDE68A', color: '#92400E', borderRadius: '4px', padding: '0 4px', lineHeight: '14px', fontWeight: 600 }}>
+              🏖 {l.name}
+            </span>
+          ))}
+          {dayLeaves.length > 2 && (
+            <span style={{ fontSize: '9px', color: '#92400E', fontWeight: 600 }}>+{dayLeaves.length - 2}</span>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -442,6 +464,8 @@ export default function Home() {
   const [isEditing, setIsEditing] = useState(false)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [calendarMode, setCalendarMode] = useState<'month' | 'quarter'>('month')
+  const [calendarView, setCalendarView] = useState<View>(Views.MONTH)
+  const [showLeavesInCalendar, setShowLeavesInCalendar] = useState(false)
 
   // Leave state
   const [leaves, setLeaves] = useState<Leave[]>([])
@@ -886,11 +910,32 @@ export default function Home() {
               ⚙ Admin
             </Link>
             <button
+              onClick={() => {
+                setCalendarMode('month')
+                setCalendarView(Views.WORK_WEEK)
+              }}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${calendarMode === 'month' && calendarView === Views.WORK_WEEK ? 'bg-indigo-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+            >
+              Work Week
+            </button>
+            <button
               onClick={() => setCalendarMode(m => m === 'quarter' ? 'month' : 'quarter')}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${calendarMode === 'quarter' ? 'bg-indigo-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
             >
               ไตรมาส
             </button>
+            <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+              <span>แสดงวันลาใน calendar</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={showLeavesInCalendar}
+                onClick={() => setShowLeavesInCalendar(v => !v)}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${showLeavesInCalendar ? 'bg-blue-600' : 'bg-gray-300'}`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showLeavesInCalendar ? 'translate-x-4' : 'translate-x-1'}`} />
+              </button>
+            </label>
             <button
               onClick={() => {
                 resetForm()
@@ -932,7 +977,8 @@ export default function Home() {
               endAccessor="end"
               style={{ height: '70vh' }}
               views={[Views.MONTH, Views.WORK_WEEK, Views.WEEK, Views.DAY]}
-              defaultView={Views.MONTH}
+              view={calendarView}
+              onView={setCalendarView}
               date={currentDate}
               onNavigate={setCurrentDate}
               selectable
@@ -962,6 +1008,11 @@ export default function Home() {
               components={{
                 toolbar: CustomToolbar,
                 month: { dateHeader: HolidayDateHeader },
+                ...(showLeavesInCalendar && {
+                  dateCellWrapper: (props: { children: React.ReactNode; value: Date }) => (
+                    <DateCellWrapper {...props} leaves={leaves} />
+                  ),
+                }),
               }}
             />
           )}
@@ -1141,16 +1192,7 @@ export default function Home() {
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
             <div>
               <h2 className="text-sm font-bold text-gray-700">Project Tasks</h2>
-              <p className="text-xs text-gray-400 mt-0.5">
-                {calendarMode === 'quarter'
-                  ? (() => {
-                      const start = getQuarterStart(currentDate)
-                      const end = moment(start).add(2, 'months')
-                      const q = Math.floor(currentDate.getMonth() / 3) + 1
-                      return `ไตรมาส ${q} (${start.format('MMM')} – ${end.format('MMM YYYY')})`
-                    })()
-                  : moment(currentDate).format('MMMM YYYY')}
-              </p>
+              <p className="text-xs text-gray-400 mt-0.5">{moment(currentDate).format('MMMM YYYY')}</p>
             </div>
             <div className="flex gap-1 items-center">
               <button
@@ -1167,7 +1209,7 @@ export default function Home() {
             </div>
           </div>
           <div className="flex-1 overflow-y-auto">
-            {projectTasks.filter(t => t.parentId === null).length === 0 ? (
+            {projectTasks.filter(t => t.parentId === null && t.month === currentMonth).length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center px-4">
                 <p className="text-sm text-gray-400">ยังไม่มีงาน</p>
                 <button onClick={openAddTask} className="mt-3 text-xs text-indigo-600 hover:underline">+ เพิ่มงานแรก</button>
@@ -1237,7 +1279,7 @@ export default function Home() {
                 }
 
                 const grouped = projectTasks
-                  .filter(t => t.parentId === null)
+                  .filter(t => t.parentId === null && t.month === currentMonth)
                   .reduce<Record<string, ProjectTask[]>>((acc, t) => {
                     if (!acc[t.projectName]) acc[t.projectName] = []
                     acc[t.projectName].push(t)

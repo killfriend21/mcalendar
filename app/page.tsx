@@ -376,6 +376,7 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
             let bg = '#FFFFFF'
             if (holiday) bg = '#FEE2E2'
             else if (isWeekend) bg = '#D1D5DB'
+            if (!inMonth) bg = '#E5E7EB'
             return (
               <div
                 key={i}
@@ -384,7 +385,6 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
                 style={{
                   height: '110px',
                   backgroundColor: bg,
-                  backgroundImage: !inMonth ? 'repeating-linear-gradient(45deg, rgba(255,255,255,0.6) 0px, rgba(255,255,255,0.6) 6px, transparent 6px, transparent 12px)' : undefined,
                   padding: '4px',
                   ...(isToday && { boxShadow: 'inset 0 0 0 2px #F97316' }),
                 }}

@@ -427,7 +427,7 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
                   <span className={`text-xs ${isToday ? 'font-bold text-blue-600' : !inMonth ? 'text-gray-300' : 'text-gray-500'}`}>{day.format('D')}</span>
                 </div>
                 <div className="flex flex-col gap-0.5 mt-0.5 flex-1 overflow-hidden">
-                  {daySchedules.slice(0, 4).map(s => {
+                  {inMonth && daySchedules.slice(0, 4).map(s => {
                     const color = projects.find(p => p.name === s.projectName)?.color || s.color || '#3B82F6'
                     const members = s.members
                       ? s.members.split(',').map(m => m.trim()).filter(Boolean).join('\n  ')
@@ -446,11 +446,11 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
                       </div>
                     )
                   })}
-                  {daySchedules.length > 4 && (
+                  {inMonth && daySchedules.length > 4 && (
                     <div className="text-[10px] text-gray-400 px-1">+{daySchedules.length - 4}</div>
                   )}
                 </div>
-                {dayLeaves.length > 0 && (
+                {inMonth && dayLeaves.length > 0 && (
                   <div className="flex items-center gap-0.5 px-1 mt-0.5 flex-shrink-0">
                     {dayLeaves.slice(0, 4).map(l => (
                       <span key={l.id} title={l.name} style={{ fontSize: '11px', lineHeight: '12px' }}>🏖</span>

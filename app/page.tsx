@@ -325,13 +325,17 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
       <div className="bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700 border-b border-gray-200 text-center">
         {monthStart.format('MMMM YYYY')}
       </div>
-      <div className="grid grid-cols-7 text-[10px] text-gray-400 border-b border-gray-100">
+      <div className="grid text-[10px] text-gray-400 border-b border-gray-100" style={{ gridTemplateColumns: '28px repeat(7, 1fr)' }}>
+        <div className="text-center py-1">Wk</div>
         {['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'].map(d => (
           <div key={d} className="text-center py-1">{d}</div>
         ))}
       </div>
       {weeks.map((week, wi) => (
-        <div key={wi} className="grid grid-cols-7">
+        <div key={wi} className="grid" style={{ gridTemplateColumns: '28px repeat(7, 1fr)' }}>
+          <div className="flex items-center justify-center text-[10px] text-gray-400 border-b border-r border-gray-100 bg-gray-50">
+            {week[0].isoWeek()}
+          </div>
           {week.map((day, i) => {
             const inMonth = day.month() === monthStart.month()
             const dateObj = day.toDate()
@@ -348,7 +352,7 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
               <div
                 key={i}
                 onClick={() => onSelectDate(dateObj)}
-                className="border-b border-r border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors overflow-hidden"
+                className="border-b border-r border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors overflow-hidden min-w-0"
                 style={{ height: '110px', backgroundColor: !inMonth ? '#FAFAFA' : bg, padding: '4px', opacity: inMonth ? 1 : 0.35 }}
               >
                 <div className="flex items-center justify-between px-1">
@@ -648,8 +652,14 @@ export default function Home() {
 
   const HolidayDateHeader = useCallback(({ date, label }: { date: Date; label: string }) => {
     const holiday = isCompanyHoliday(date)
+    const isWeekStart = moment(date).day() === 0
     return (
-      <div style={{ textAlign: 'right', padding: '0 4px', lineHeight: 1 }}>
+      <div style={{ textAlign: 'right', padding: '0 4px', lineHeight: 1, position: 'relative' }}>
+        {isWeekStart && (
+          <span style={{ position: 'absolute', left: 4, top: 0, fontSize: '10px', color: '#9CA3AF', fontWeight: 600 }}>
+            wk{moment(date).isoWeek()}
+          </span>
+        )}
         <span style={{ fontSize: '12px' }}>{label}</span>
         {holiday && (
           <div title={holiday.name} style={{ fontSize: '11px', color: '#DC2626', fontWeight: 700, lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>

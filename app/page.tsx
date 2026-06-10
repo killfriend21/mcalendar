@@ -207,7 +207,6 @@ function StockWidget({ refreshInterval = 120, slideInterval = 60 }: { refreshInt
 
 const VIEW_LABELS: Record<string, string> = {
   month: 'เดือน',
-  work_week: 'Work Week',
   week: 'สัปดาห์',
   day: 'วัน',
 }
@@ -910,15 +909,6 @@ export default function Home() {
               ⚙ Admin
             </Link>
             <button
-              onClick={() => {
-                setCalendarMode('month')
-                setCalendarView(Views.WORK_WEEK)
-              }}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${calendarMode === 'month' && calendarView === Views.WORK_WEEK ? 'bg-indigo-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
-            >
-              Work Week
-            </button>
-            <button
               onClick={() => setCalendarMode(m => m === 'quarter' ? 'month' : 'quarter')}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${calendarMode === 'quarter' ? 'bg-indigo-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
             >
@@ -976,7 +966,7 @@ export default function Home() {
               startAccessor="start"
               endAccessor="end"
               style={{ height: '70vh' }}
-              views={[Views.MONTH, Views.WORK_WEEK, Views.WEEK, Views.DAY]}
+              views={[Views.MONTH, Views.WEEK, Views.DAY]}
               view={calendarView}
               onView={setCalendarView}
               date={currentDate}

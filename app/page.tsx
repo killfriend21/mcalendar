@@ -927,8 +927,8 @@ export default function Home() {
   return (
     <div className="min-h-screen p-6 bg-gray-50 flex">
       {/* Center column — calendar, full width */}
-      <div className="w-[78%]">
-        <div className="flex items-center justify-between mb-6">
+      <div className="w-[78%] flex flex-col" style={{ height: 'calc(100vh - 3rem)' }}>
+        <div className="flex items-center justify-between mb-6 flex-shrink-0">
           <div className="flex items-center gap-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-800">ปฏิทินทีม Test</h1>
@@ -972,7 +972,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex-1 flex flex-col" style={{ minHeight: 0 }}>
           {calendarMode === 'quarter' ? (
             <>
               <QuarterToolbar
@@ -981,18 +981,20 @@ export default function Home() {
                 onNext={() => setCurrentDate(moment(currentDate).add(3, 'months').toDate())}
                 onToday={() => setCurrentDate(new Date())}
               />
-              <QuarterView
-                currentDate={currentDate}
-                schedules={schedules}
-                projects={projects}
-                leaves={leaves}
-                projectTasks={projectTasks}
-                isCompanyHoliday={isCompanyHoliday}
-                onSelectDate={(date) => {
-                  setCurrentDate(date)
-                  setCalendarMode('month')
-                }}
-              />
+              <div className="flex-1 overflow-y-auto">
+                <QuarterView
+                  currentDate={currentDate}
+                  schedules={schedules}
+                  projects={projects}
+                  leaves={leaves}
+                  projectTasks={projectTasks}
+                  isCompanyHoliday={isCompanyHoliday}
+                  onSelectDate={(date) => {
+                    setCurrentDate(date)
+                    setCalendarMode('month')
+                  }}
+                />
+              </div>
             </>
           ) : (
             <>
@@ -1008,7 +1010,7 @@ export default function Home() {
                   setCurrentDate(moment(currentDate).add(action === 'PREV' ? -1 : 1, unit).toDate())
                 }}
               />
-              <div style={{ display: 'flex', height: '70vh' }}>
+              <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
               {calendarView === Views.MONTH && <WeekNumberGutter currentDate={currentDate} />}
               <Calendar
               localizer={localizer}

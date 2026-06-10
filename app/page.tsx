@@ -239,12 +239,22 @@ function CustomToolbar({ onNavigate, date }: any) {
 function DateCellWrapper({ children, value, leaves }: { children: React.ReactNode; value: Date; leaves: Leave[] }) {
   const dayStr = moment(value).format('YYYY-MM-DD')
   const dayLeaves = leaves.filter(l => dayStr >= moment(l.startDate).format('YYYY-MM-DD') && dayStr <= moment(l.endDate).format('YYYY-MM-DD'))
-  const child = children as React.ReactElement<{ style?: React.CSSProperties }>
+  const child = children as React.ReactElement<{ style?: React.CSSProperties; className?: string }>
   const styledChild = React.cloneElement(child, {
     style: { ...child.props.style, height: '100%', width: '100%' },
   })
+  const isToday = moment(value).isSame(new Date(), 'day')
   return (
-    <div style={{ position: 'relative', height: '100%', flex: '1 1 0%', width: '100%' }}>
+    <div
+      className={child.props.className}
+      style={{
+        position: 'relative',
+        height: '100%',
+        flex: '1 1 0%',
+        width: '100%',
+        ...(isToday && { boxShadow: 'inset 0 0 0 2px #2563EB', zIndex: 2 }),
+      }}
+    >
       {styledChild}
       {dayLeaves.length > 0 && (
         <div style={{ position: 'absolute', bottom: 2, left: 2, right: 2, display: 'flex', flexWrap: 'wrap', gap: '2px', pointerEvents: 'none', zIndex: 1 }}>

@@ -205,8 +205,16 @@ function StockWidget({ refreshInterval = 120, slideInterval = 60 }: { refreshInt
   )
 }
 
+const VIEW_LABELS: Record<string, string> = {
+  month: 'เดือน',
+  work_week: 'สัปดาห์ทำงาน',
+  week: 'สัปดาห์',
+  day: 'วัน',
+}
+
 function CustomToolbar({ label, onNavigate, onView, view, views, date }: any) {
   const monthLabel = moment(date).format('MMMM YYYY')
+  const viewList: string[] = Array.isArray(views) ? views : Object.keys(views || {})
   return (
     <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
       <div className="flex items-center gap-2">
@@ -225,6 +233,17 @@ function CustomToolbar({ label, onNavigate, onView, view, views, date }: any) {
       </div>
       <h3 className="text-lg font-semibold text-gray-800">{monthLabel}</h3>
       <div className="flex items-center gap-2">
+        {viewList.map((v) => (
+          <button
+            key={v}
+            onClick={() => onView(v)}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              view === v ? 'bg-blue-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+            }`}
+          >
+            {VIEW_LABELS[v] || v}
+          </button>
+        ))}
         <button
           onClick={() => onNavigate('TODAY')}
           className="px-3 py-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700 text-sm font-medium transition-colors"
@@ -232,6 +251,149 @@ function CustomToolbar({ label, onNavigate, onView, view, views, date }: any) {
           Today
         </button>
       </div>
+    </div>
+  )
+}
+
+function getQuarterStart(date: Date) {
+  const q = Math.floor(date.getMonth() / 3)
+  return moment(date).month(q * 3).startOf('month')
+}
+
+function QuarterToolbar({ currentDate, onPrev, onNext, onToday }: { currentDate: Date; onPrev: () => void; onNext: () => void; onToday: () => void }) {
+  const start = getQuarterStart(currentDate)
+  const end = moment(start).add(2, 'months')
+  const q = Math.floor(currentDate.getMonth() / 3) + 1
+  const label = `ไตรมาส ${q}/${start.format('YYYY')} (${start.format('MMM')} – ${end.format('MMM YYYY')})`
+  return (
+    <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
+      <div className="flex items-center gap-2">
+        <button onClick={onPrev} className="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium transition-colors">← Prev</button>
+        <button onClick={onNext} className="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium transition-colors">Next →</button>
+      </div>
+      <h3 className="text-lg font-semibold text-gray-800">{label}</h3>
+      <button onClick={onToday} className="px-3 py-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700 text-sm font-medium transition-colors">Today</button>
+    </div>
+  )
+}
+
+function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHoliday, projects, onSelectDate }: {
+  monthStart: moment.Moment
+  getDaySchedules: (date: Date) => Schedule[]
+  getDayLeaves: (date: Date) => Leave[]
+  isCompanyHoliday: (date: Date) => { date: string; name: string; color: string } | undefined
+  projects: { id: number; name: string; color: string }[]
+  onSelectDate: (date: Date) => void
+}) {
+  const startOfGrid = moment(monthStart).startOf('week')
+  const endOfGrid = moment(monthStart).endOf('month').endOf('week')
+  const days: moment.Moment[] = []
+  const cur = startOfGrid.clone()
+  while (cur.isSameOrBefore(endOfGrid)) {
+    days.push(cur.clone())
+    cur.add(1, 'day')
+  }
+
+  return (
+    <div className="border border-gray-200 rounded-lg overflow-hidden flex flex-col">
+      <div className="bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700 border-b border-gray-200 text-center">
+        {monthStart.format('MMMM YYYY')}
+      </div>
+      <div className="grid grid-cols-7 text-[10px] text-gray-400 border-b border-gray-100">
+        {['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'].map(d => (
+          <div key={d} className="text-center py-1">{d}</div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 flex-1">
+        {days.map((day, i) => {
+          const inMonth = day.month() === monthStart.month()
+          const dateObj = day.toDate()
+          const daySchedules = getDaySchedules(dateObj)
+          const dayLeaves = getDayLeaves(dateObj)
+          const holiday = isCompanyHoliday(dateObj)
+          const dow = day.day()
+          const isWeekend = dow === 0 || dow === 6
+          const isToday = day.isSame(moment(), 'day')
+          let bg = '#FFFFFF'
+          if (holiday) bg = '#FEE2E2'
+          else if (isWeekend) bg = '#F3F4F6'
+          return (
+            <div
+              key={i}
+              onClick={() => onSelectDate(dateObj)}
+              className="border-b border-r border-gray-50 cursor-pointer hover:bg-blue-50 transition-colors"
+              style={{ minHeight: '56px', backgroundColor: !inMonth ? '#FAFAFA' : bg, padding: '2px', opacity: inMonth ? 1 : 0.35 }}
+            >
+              <div className="flex items-center justify-between px-1">
+                <span className={`text-[10px] ${isToday ? 'font-bold text-blue-600' : 'text-gray-500'}`}>{day.format('D')}</span>
+                {dayLeaves.length > 0 && (
+                  <span className="text-[8px]" title={dayLeaves.map(l => l.name).join(', ')}>🏖</span>
+                )}
+              </div>
+              <div className="flex flex-col gap-0.5 mt-0.5">
+                {daySchedules.slice(0, 2).map(s => {
+                  const color = projects.find(p => p.name === s.projectName)?.color || s.color || '#3B82F6'
+                  return (
+                    <div
+                      key={s.id}
+                      title={s.notes ? `${s.projectName} · ${s.notes}` : s.projectName}
+                      className="text-[8px] px-1 rounded truncate text-white leading-tight"
+                      style={{ backgroundColor: color }}
+                    >
+                      {s.projectName}
+                    </div>
+                  )
+                })}
+                {daySchedules.length > 2 && (
+                  <div className="text-[8px] text-gray-400 px-1">+{daySchedules.length - 2}</div>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function QuarterView({ currentDate, schedules, projects, leaves, isCompanyHoliday, onSelectDate }: {
+  currentDate: Date
+  schedules: Schedule[]
+  projects: { id: number; name: string; color: string }[]
+  leaves: Leave[]
+  isCompanyHoliday: (date: Date) => { date: string; name: string; color: string } | undefined
+  onSelectDate: (date: Date) => void
+}) {
+  const quarterStart = getQuarterStart(currentDate)
+  const months = [0, 1, 2].map(i => moment(quarterStart).add(i, 'months'))
+
+  const getDaySchedules = (date: Date) => {
+    const dayStr = moment(date).format('YYYY-MM-DD')
+    return schedules.filter(s => {
+      const start = moment(s.date).format('YYYY-MM-DD')
+      const end = s.endDate ? moment(s.endDate).format('YYYY-MM-DD') : start
+      return dayStr >= start && dayStr <= end
+    })
+  }
+
+  const getDayLeaves = (date: Date) => {
+    const dayStr = moment(date).format('YYYY-MM-DD')
+    return leaves.filter(l => dayStr >= l.startDate && dayStr <= l.endDate)
+  }
+
+  return (
+    <div className="grid grid-cols-3 gap-4">
+      {months.map(monthStart => (
+        <MonthMiniGrid
+          key={monthStart.format('YYYY-MM')}
+          monthStart={monthStart}
+          getDaySchedules={getDaySchedules}
+          getDayLeaves={getDayLeaves}
+          isCompanyHoliday={isCompanyHoliday}
+          projects={projects}
+          onSelectDate={onSelectDate}
+        />
+      ))}
     </div>
   )
 }
@@ -279,6 +441,7 @@ export default function Home() {
   const [selectedEvent, setSelectedEvent] = useState<Schedule | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [currentDate, setCurrentDate] = useState(new Date())
+  const [calendarMode, setCalendarMode] = useState<'month' | 'quarter'>('month')
 
   // Leave state
   const [leaves, setLeaves] = useState<Leave[]>([])
@@ -723,6 +886,12 @@ export default function Home() {
               ⚙ Admin
             </Link>
             <button
+              onClick={() => setCalendarMode(m => m === 'quarter' ? 'month' : 'quarter')}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${calendarMode === 'quarter' ? 'bg-indigo-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+            >
+              ไตรมาส
+            </button>
+            <button
               onClick={() => {
                 resetForm()
                 setShowModal(true)
@@ -735,45 +904,67 @@ export default function Home() {
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <Calendar
-            localizer={localizer}
-            events={events}
-            startAccessor="start"
-            endAccessor="end"
-            style={{ height: '70vh' }}
-            views={[Views.MONTH, Views.WEEK, Views.DAY]}
-            defaultView={Views.MONTH}
-            date={currentDate}
-            onNavigate={setCurrentDate}
-            selectable
-            onSelectSlot={handleSelectSlot}
-            onSelectEvent={handleSelectEvent}
-            eventPropGetter={eventPropGetter}
-            tooltipAccessor={(event: { resource: Schedule }) => {
-              const members = event.resource?.members
-                ? event.resource.members.split(',').map((m: string) => m.trim()).filter(Boolean).join('\n  ')
-                : '-'
-              const linkedTask = projectTasks.find(t => t.scheduleId === event.resource?.id)
-              const status = linkedTask ? (linkedTask.done ? '✓ เสร็จแล้ว' : '⏳ กำลังทำ') : '-'
-              return `Project: ${event.resource?.projectName || '-'}\nสถานะ: ${status}\nเพื่องาน: ${event.resource?.notes || '-'}\nไป:\n  ${members}`
-            }}
-            dayPropGetter={(date: Date) => {
-              const day = date.getDay()
-              const companyHoliday = isCompanyHoliday(date)
-              if (companyHoliday) {
-                return { style: { backgroundColor: '#FEE2E2' } }
-              }
-              if (day === 0 || day === 6) {
-                return { style: { backgroundColor: '#e5e7eb' } }
-              }
-              return {}
-            }}
-            getNow={() => new Date()}
-            components={{
-              toolbar: CustomToolbar,
-              month: { dateHeader: HolidayDateHeader },
-            }}
-          />
+          {calendarMode === 'quarter' ? (
+            <>
+              <QuarterToolbar
+                currentDate={currentDate}
+                onPrev={() => setCurrentDate(moment(currentDate).subtract(3, 'months').toDate())}
+                onNext={() => setCurrentDate(moment(currentDate).add(3, 'months').toDate())}
+                onToday={() => setCurrentDate(new Date())}
+              />
+              <QuarterView
+                currentDate={currentDate}
+                schedules={schedules}
+                projects={projects}
+                leaves={leaves}
+                isCompanyHoliday={isCompanyHoliday}
+                onSelectDate={(date) => {
+                  setCurrentDate(date)
+                  setCalendarMode('month')
+                }}
+              />
+            </>
+          ) : (
+            <Calendar
+              localizer={localizer}
+              events={events}
+              startAccessor="start"
+              endAccessor="end"
+              style={{ height: '70vh' }}
+              views={[Views.MONTH, Views.WORK_WEEK, Views.WEEK, Views.DAY]}
+              defaultView={Views.MONTH}
+              date={currentDate}
+              onNavigate={setCurrentDate}
+              selectable
+              onSelectSlot={handleSelectSlot}
+              onSelectEvent={handleSelectEvent}
+              eventPropGetter={eventPropGetter}
+              tooltipAccessor={(event: { resource: Schedule }) => {
+                const members = event.resource?.members
+                  ? event.resource.members.split(',').map((m: string) => m.trim()).filter(Boolean).join('\n  ')
+                  : '-'
+                const linkedTask = projectTasks.find(t => t.scheduleId === event.resource?.id)
+                const status = linkedTask ? (linkedTask.done ? '✓ เสร็จแล้ว' : '⏳ กำลังทำ') : '-'
+                return `Project: ${event.resource?.projectName || '-'}\nสถานะ: ${status}\nเพื่องาน: ${event.resource?.notes || '-'}\nไป:\n  ${members}`
+              }}
+              dayPropGetter={(date: Date) => {
+                const day = date.getDay()
+                const companyHoliday = isCompanyHoliday(date)
+                if (companyHoliday) {
+                  return { style: { backgroundColor: '#FEE2E2' } }
+                }
+                if (day === 0 || day === 6) {
+                  return { style: { backgroundColor: '#e5e7eb' } }
+                }
+                return {}
+              }}
+              getNow={() => new Date()}
+              components={{
+                toolbar: CustomToolbar,
+                month: { dateHeader: HolidayDateHeader },
+              }}
+            />
+          )}
         </div>
 
         {/* Modal */}
@@ -950,7 +1141,16 @@ export default function Home() {
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
             <div>
               <h2 className="text-sm font-bold text-gray-700">Project Tasks</h2>
-              <p className="text-xs text-gray-400 mt-0.5">{moment(currentDate).format('MMMM YYYY')}</p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                {calendarMode === 'quarter'
+                  ? (() => {
+                      const start = getQuarterStart(currentDate)
+                      const end = moment(start).add(2, 'months')
+                      const q = Math.floor(currentDate.getMonth() / 3) + 1
+                      return `ไตรมาส ${q} (${start.format('MMM')} – ${end.format('MMM YYYY')})`
+                    })()
+                  : moment(currentDate).format('MMMM YYYY')}
+              </p>
             </div>
             <div className="flex gap-1 items-center">
               <button

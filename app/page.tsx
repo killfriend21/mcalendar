@@ -29,7 +29,7 @@ interface StockSymbol {
   label: string | null
 }
 
-function StockWidget({ refreshInterval = 120, slideInterval = 60 }: { refreshInterval?: number; slideInterval?: number }) {
+function StockWidget({ refreshInterval = 120, slideInterval = 60, compact = false }: { refreshInterval?: number; slideInterval?: number; compact?: boolean }) {
   const [symbols, setSymbols] = useState<StockSymbol[]>([])
   const [currentIdx, setCurrentIdx] = useState(0)
   const [stockCache, setStockCache] = useState<Record<string, StockData>>({})
@@ -97,6 +97,40 @@ function StockWidget({ refreshInterval = 120, slideInterval = 60 }: { refreshInt
   const fetchedDt = stock ? new Date((stock.fetchedAt ?? stock.time) * 1000) : null
   const updateDate = fetchedDt ? fetchedDt.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit' }) : ''
   const updateTime = fetchedDt ? fetchedDt.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) : ''
+
+  if (compact) {
+    return (
+      <div
+        onClick={() => symbols.length > 1 && setCurrentIdx(i => (i + 1) % symbols.length)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          borderRadius: '10px',
+          border: `1px solid ${isError || isLoading ? '#E5E7EB' : cardBorder}`,
+          background: isError || isLoading ? '#F9FAFB' : cardBg,
+          padding: '6px 14px',
+          cursor: symbols.length > 1 ? 'pointer' : 'default',
+        }}
+      >
+        {isError ? (
+          <span style={{ fontSize: '12px', color: '#9CA3AF' }}>โหลดราคาไม่ได้</span>
+        ) : isLoading ? (
+          <span style={{ fontSize: '12px', color: '#9CA3AF' }}>กำลังโหลด...</span>
+        ) : (
+          <>
+            <span style={{ fontSize: '13px', fontWeight: 800, color: '#111827' }}>{displayName}</span>
+            <span style={{ fontSize: '16px', fontWeight: 900, color: '#111827', letterSpacing: '-0.02em' }}>
+              {stock?.price?.toFixed(2) ?? '—'}
+            </span>
+            <span style={{ fontSize: '12px', fontWeight: 700, color: accentColor }}>
+              {arrow} {stock ? (stock.change >= 0 ? '+' : '') + stock.change.toFixed(2) + ' (' + (stock.change >= 0 ? '+' : '') + stock.changePercent.toFixed(2) + '%)' : '—'}
+            </span>
+          </>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -383,7 +417,7 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
                 onClick={() => onSelectDate(dateObj)}
                 className="border-b border-r border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors overflow-hidden min-w-0"
                 style={{
-                  height: '110px',
+                  height: '150px',
                   backgroundColor: bg,
                   padding: '4px',
                   ...(isToday && { boxShadow: 'inset 0 0 0 2px #F97316' }),
@@ -455,7 +489,7 @@ function QuarterView({ currentDate, schedules, projects, leaves, projectTasks, i
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-3 gap-4">
       {months.map(monthStart => (
         <MonthMiniGrid
           key={monthStart.format('YYYY-MM')}
@@ -892,70 +926,17 @@ export default function Home() {
 
   return (
     <div className="min-h-screen p-6 bg-gray-50 flex">
-      {/* Left column 20% — stock 20% / tasks 60% / leave 20% */}
-      <div className="w-[20%] pr-4 pt-1 flex flex-col" style={{ height: 'calc(100vh - 3rem)', gap: '12px' }}>
-
-        {/* Stock 20% */}
-        {stockEnabled && (
-          <div style={{ flex: '1 1 0', minHeight: 0 }}>
-            <StockWidget refreshInterval={stockRefreshInterval} slideInterval={stockSlideInterval} />
-          </div>
-        )}
-
-        {/* Leave table */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col overflow-hidden" style={{ flex: '4 1 0', minHeight: 0 }}>
-          <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
-            <h2 className="text-sm font-bold text-gray-700">ตารางลา</h2>
-            <button onClick={openAddLeave} className="text-xs bg-blue-600 text-white px-2 py-1 rounded-lg hover:bg-blue-700 transition-colors">
-              + เพิ่ม
-            </button>
-          </div>
-          <div className="flex-1 overflow-y-auto">
-            {leaves.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-6">ไม่มีข้อมูล</p>
-            ) : (
-              <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-gray-50">
-                  <tr>
-                    <th className="text-left px-3 py-2 text-gray-500 font-medium" style={{ width: '55%' }}>ชื่อ</th>
-                    <th className="text-left px-3 py-2 text-gray-500 font-medium" style={{ width: '35%' }}>วันที่</th>
-                    <th className="px-2 py-2" style={{ width: '10%' }} />
-                  </tr>
-                </thead>
-                <tbody>
-                  {leaves.map(leave => {
-                    const isPast = new Date(leave.endDate) < new Date(new Date().setHours(0,0,0,0))
-                    return (
-                      <tr key={leave.id} className="border-t border-gray-50 hover:bg-gray-50 group">
-                        <td className={`px-3 py-2.5 font-medium truncate max-w-[80px] ${isPast ? 'line-through text-gray-400' : 'text-gray-800'}`}>
-                          {leave.name}
-                        </td>
-                        <td className={`px-3 py-2.5 ${isPast ? 'line-through text-gray-400' : 'text-gray-500'}`}>
-                          {moment(leave.startDate).format('D MMM')}
-                          {leave.startDate !== leave.endDate ? ` – ${moment(leave.endDate).format('D MMM')}` : ''}
-                        </td>
-                        <td className="px-2 py-2.5">
-                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => openEditLeave(leave)} className="text-blue-500 hover:text-blue-700">✎</button>
-                            <button onClick={() => deleteLeave(leave.id)} className="text-red-400 hover:text-red-600">✕</button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Center column 60% — calendar */}
-      <div className="w-[60%]">
+      {/* Center column — calendar, full width */}
+      <div className="w-[78%]">
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">ปฏิทินทีม Test</h1>
-            <p className="text-gray-500 text-sm mt-1">จัดการตารางงานของทีม</p>
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">ปฏิทินทีม Test</h1>
+              <p className="text-gray-500 text-sm mt-1">จัดการตารางงานของทีม</p>
+            </div>
+            {stockEnabled && (
+              <StockWidget compact refreshInterval={stockRefreshInterval} slideInterval={stockSlideInterval} />
+            )}
           </div>
           <div className="flex items-center gap-3">
             <Link href="/admin" className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
@@ -1251,9 +1232,9 @@ export default function Home() {
         )}
       </div>
 
-      {/* Right column 20% — project tasks full panel */}
-      <div className="w-[20%] pl-4 pt-1 flex flex-col" style={{ height: 'calc(100vh - 3rem)' }}>
-        <div className="flex-1 flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      {/* Right column 22% — project tasks 80% / leave table 20% */}
+      <div className="w-[22%] pl-4 pt-1 flex flex-col" style={{ height: 'calc(100vh - 3rem)', gap: '12px' }}>
+        <div className="flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden" style={{ flex: '4 1 0', minHeight: 0 }}>
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
             <div>
               <h2 className="text-sm font-bold text-gray-700">Project Tasks</h2>
@@ -1393,6 +1374,53 @@ export default function Home() {
                   )
                 })
               })()
+            )}
+          </div>
+        </div>
+
+        {/* Leave table 20% */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col overflow-hidden" style={{ flex: '1 1 0', minHeight: 0 }}>
+          <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
+            <h2 className="text-sm font-bold text-gray-700">ตารางลา</h2>
+            <button onClick={openAddLeave} className="text-xs bg-blue-600 text-white px-2 py-1 rounded-lg hover:bg-blue-700 transition-colors">
+              + เพิ่ม
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {leaves.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-6">ไม่มีข้อมูล</p>
+            ) : (
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 bg-gray-50">
+                  <tr>
+                    <th className="text-left px-3 py-2 text-gray-500 font-medium" style={{ width: '55%' }}>ชื่อ</th>
+                    <th className="text-left px-3 py-2 text-gray-500 font-medium" style={{ width: '35%' }}>วันที่</th>
+                    <th className="px-2 py-2" style={{ width: '10%' }} />
+                  </tr>
+                </thead>
+                <tbody>
+                  {leaves.map(leave => {
+                    const isPast = new Date(leave.endDate) < new Date(new Date().setHours(0,0,0,0))
+                    return (
+                      <tr key={leave.id} className="border-t border-gray-50 hover:bg-gray-50 group">
+                        <td className={`px-3 py-2.5 font-medium truncate max-w-[80px] ${isPast ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                          {leave.name}
+                        </td>
+                        <td className={`px-3 py-2.5 ${isPast ? 'line-through text-gray-400' : 'text-gray-500'}`}>
+                          {moment(leave.startDate).format('D MMM')}
+                          {leave.startDate !== leave.endDate ? ` – ${moment(leave.endDate).format('D MMM')}` : ''}
+                        </td>
+                        <td className="px-2 py-2.5">
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onClick={() => openEditLeave(leave)} className="text-blue-500 hover:text-blue-700">✎</button>
+                            <button onClick={() => deleteLeave(leave.id)} className="text-red-400 hover:text-red-600">✕</button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
             )}
           </div>
         </div>

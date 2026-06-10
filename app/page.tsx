@@ -298,13 +298,14 @@ function QuarterToolbar({ currentDate, onPrev, onNext, onToday }: { currentDate:
   )
 }
 
-function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHoliday, projects, onSelectDate }: {
+function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHoliday, projects, onSelectDate, className }: {
   monthStart: moment.Moment
   getDaySchedules: (date: Date) => Schedule[]
   getDayLeaves: (date: Date) => Leave[]
   isCompanyHoliday: (date: Date) => { date: string; name: string; color: string } | undefined
   projects: { id: number; name: string; color: string }[]
   onSelectDate: (date: Date) => void
+  className?: string
 }) {
   const startOfGrid = moment(monthStart).startOf('week')
   const endOfGrid = moment(monthStart).endOf('month').endOf('week')
@@ -321,8 +322,8 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
   }
 
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden">
-      <div className="bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700 border-b border-gray-200 text-center sticky top-0 z-10">
+    <div className={`border border-gray-200 rounded-lg overflow-hidden ${className || ''}`}>
+      <div className="bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700 border-b border-gray-200 text-center">
         {monthStart.format('MMMM YYYY')}
       </div>
       <div className="grid grid-cols-7 text-[10px] text-gray-400 border-b border-gray-100">
@@ -349,7 +350,7 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
                 key={i}
                 onClick={() => onSelectDate(dateObj)}
                 className="border-b border-r border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors overflow-hidden"
-                style={{ height: '88px', backgroundColor: !inMonth ? '#FAFAFA' : bg, padding: '4px', opacity: inMonth ? 1 : 0.35 }}
+                style={{ height: '110px', backgroundColor: !inMonth ? '#FAFAFA' : bg, padding: '4px', opacity: inMonth ? 1 : 0.35 }}
               >
                 <div className="flex items-center justify-between px-1">
                   <span className={`text-xs ${isToday ? 'font-bold text-blue-600' : 'text-gray-500'}`}>{day.format('D')}</span>
@@ -358,7 +359,7 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
                   )}
                 </div>
                 <div className="flex flex-col gap-0.5 mt-0.5">
-                  {daySchedules.slice(0, 3).map(s => {
+                  {daySchedules.slice(0, 4).map(s => {
                     const color = projects.find(p => p.name === s.projectName)?.color || s.color || '#3B82F6'
                     return (
                       <div
@@ -371,8 +372,8 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
                       </div>
                     )
                   })}
-                  {daySchedules.length > 3 && (
-                    <div className="text-[10px] text-gray-400 px-1">+{daySchedules.length - 3}</div>
+                  {daySchedules.length > 4 && (
+                    <div className="text-[10px] text-gray-400 px-1">+{daySchedules.length - 4}</div>
                   )}
                 </div>
               </div>
@@ -410,8 +411,8 @@ function QuarterView({ currentDate, schedules, projects, leaves, isCompanyHolida
   }
 
   return (
-    <div className="flex flex-col gap-4 overflow-y-auto pr-1" style={{ height: '70vh' }}>
-      {months.map(monthStart => (
+    <div className="grid grid-cols-2 gap-4">
+      {months.map((monthStart, i) => (
         <MonthMiniGrid
           key={monthStart.format('YYYY-MM')}
           monthStart={monthStart}
@@ -420,6 +421,7 @@ function QuarterView({ currentDate, schedules, projects, leaves, isCompanyHolida
           isCompanyHoliday={isCompanyHoliday}
           projects={projects}
           onSelectDate={onSelectDate}
+          className={i === 2 ? 'col-span-2' : ''}
         />
       ))}
     </div>

@@ -298,12 +298,13 @@ function QuarterToolbar({ currentDate, onPrev, onNext, onToday }: { currentDate:
   )
 }
 
-function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHoliday, projects, onSelectDate }: {
+function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHoliday, projects, projectTasks, onSelectDate }: {
   monthStart: moment.Moment
   getDaySchedules: (date: Date) => Schedule[]
   getDayLeaves: (date: Date) => Leave[]
   isCompanyHoliday: (date: Date) => { date: string; name: string; color: string } | undefined
   projects: { id: number; name: string; color: string }[]
+  projectTasks: ProjectTask[]
   onSelectDate: (date: Date) => void
 }) {
   const startOfGrid = moment(monthStart).startOf('week')
@@ -364,10 +365,16 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
                 <div className="flex flex-col gap-0.5 mt-0.5">
                   {daySchedules.slice(0, 4).map(s => {
                     const color = projects.find(p => p.name === s.projectName)?.color || s.color || '#3B82F6'
+                    const members = s.members
+                      ? s.members.split(',').map(m => m.trim()).filter(Boolean).join('\n  ')
+                      : '-'
+                    const linkedTask = projectTasks.find(t => t.scheduleId === s.id)
+                    const status = linkedTask ? (linkedTask.done ? '✓ เสร็จแล้ว' : '⏳ กำลังทำ') : '-'
+                    const tooltip = `Project: ${s.projectName || '-'}\nสถานะ: ${status}\nเพื่องาน: ${s.notes || '-'}\nไป:\n  ${members}`
                     return (
                       <div
                         key={s.id}
-                        title={s.notes ? `${s.projectName} · ${s.notes}` : s.projectName}
+                        title={tooltip}
                         className="text-[10px] px-1 rounded truncate text-white leading-tight"
                         style={{ backgroundColor: color }}
                       >
@@ -388,11 +395,12 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
   )
 }
 
-function QuarterView({ currentDate, schedules, projects, leaves, isCompanyHoliday, onSelectDate }: {
+function QuarterView({ currentDate, schedules, projects, leaves, projectTasks, isCompanyHoliday, onSelectDate }: {
   currentDate: Date
   schedules: Schedule[]
   projects: { id: number; name: string; color: string }[]
   leaves: Leave[]
+  projectTasks: ProjectTask[]
   isCompanyHoliday: (date: Date) => { date: string; name: string; color: string } | undefined
   onSelectDate: (date: Date) => void
 }) {
@@ -423,6 +431,7 @@ function QuarterView({ currentDate, schedules, projects, leaves, isCompanyHolida
           getDayLeaves={getDayLeaves}
           isCompanyHoliday={isCompanyHoliday}
           projects={projects}
+          projectTasks={projectTasks}
           onSelectDate={onSelectDate}
         />
       ))}
@@ -969,6 +978,7 @@ export default function Home() {
                 schedules={schedules}
                 projects={projects}
                 leaves={leaves}
+                projectTasks={projectTasks}
                 isCompanyHoliday={isCompanyHoliday}
                 onSelectDate={(date) => {
                   setCurrentDate(date)

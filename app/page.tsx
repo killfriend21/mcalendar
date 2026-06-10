@@ -1014,7 +1014,20 @@ export default function Home() {
               />
             </>
           ) : (
-            <div style={{ display: 'flex', height: '70vh' }}>
+            <>
+              <CustomToolbar
+                label=""
+                view={calendarView}
+                views={[Views.MONTH, Views.WEEK, Views.DAY]}
+                date={currentDate}
+                onView={setCalendarView}
+                onNavigate={(action: string) => {
+                  if (action === 'TODAY') { setCurrentDate(new Date()); return }
+                  const unit = calendarView === Views.MONTH ? 'month' : calendarView === Views.WEEK ? 'week' : 'day'
+                  setCurrentDate(moment(currentDate).add(action === 'PREV' ? -1 : 1, unit).toDate())
+                }}
+              />
+              <div style={{ display: 'flex', height: '70vh' }}>
               {calendarView === Views.MONTH && <WeekNumberGutter currentDate={currentDate} />}
               <Calendar
               localizer={localizer}
@@ -1052,7 +1065,7 @@ export default function Home() {
               }}
               getNow={() => new Date()}
               components={{
-                toolbar: CustomToolbar,
+                toolbar: () => null,
                 month: { dateHeader: HolidayDateHeader },
                 ...(showLeavesInCalendar && {
                   dateCellWrapper: (props: { children: React.ReactNode; value: Date }) => (
@@ -1061,7 +1074,8 @@ export default function Home() {
                 }),
               }}
               />
-            </div>
+              </div>
+            </>
           )}
         </div>
 

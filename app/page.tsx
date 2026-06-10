@@ -343,30 +343,30 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
               key={i}
               onClick={() => onSelectDate(dateObj)}
               className="border-b border-r border-gray-50 cursor-pointer hover:bg-blue-50 transition-colors"
-              style={{ minHeight: '56px', backgroundColor: !inMonth ? '#FAFAFA' : bg, padding: '2px', opacity: inMonth ? 1 : 0.35 }}
+              style={{ minHeight: '90px', backgroundColor: !inMonth ? '#FAFAFA' : bg, padding: '4px', opacity: inMonth ? 1 : 0.35 }}
             >
               <div className="flex items-center justify-between px-1">
-                <span className={`text-[10px] ${isToday ? 'font-bold text-blue-600' : 'text-gray-500'}`}>{day.format('D')}</span>
+                <span className={`text-xs ${isToday ? 'font-bold text-blue-600' : 'text-gray-500'}`}>{day.format('D')}</span>
                 {dayLeaves.length > 0 && (
-                  <span className="text-[8px]" title={dayLeaves.map(l => l.name).join(', ')}>🏖</span>
+                  <span className="text-[10px]" title={dayLeaves.map(l => l.name).join(', ')}>🏖</span>
                 )}
               </div>
               <div className="flex flex-col gap-0.5 mt-0.5">
-                {daySchedules.slice(0, 2).map(s => {
+                {daySchedules.slice(0, 3).map(s => {
                   const color = projects.find(p => p.name === s.projectName)?.color || s.color || '#3B82F6'
                   return (
                     <div
                       key={s.id}
                       title={s.notes ? `${s.projectName} · ${s.notes}` : s.projectName}
-                      className="text-[8px] px-1 rounded truncate text-white leading-tight"
+                      className="text-[10px] px-1 rounded truncate text-white leading-tight"
                       style={{ backgroundColor: color }}
                     >
                       {s.projectName}
                     </div>
                   )
                 })}
-                {daySchedules.length > 2 && (
-                  <div className="text-[8px] text-gray-400 px-1">+{daySchedules.length - 2}</div>
+                {daySchedules.length > 3 && (
+                  <div className="text-[10px] text-gray-400 px-1">+{daySchedules.length - 3}</div>
                 )}
               </div>
             </div>
@@ -403,7 +403,7 @@ function QuarterView({ currentDate, schedules, projects, leaves, isCompanyHolida
   }
 
   return (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="flex flex-col gap-4 max-h-[75vh] overflow-y-auto pr-1">
       {months.map(monthStart => (
         <MonthMiniGrid
           key={monthStart.format('YYYY-MM')}

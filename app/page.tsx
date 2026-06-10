@@ -315,9 +315,14 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
     cur.add(1, 'day')
   }
 
+  const weeks: moment.Moment[][] = []
+  for (let i = 0; i < days.length; i += 7) {
+    weeks.push(days.slice(i, i + 7))
+  }
+
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden flex flex-col">
-      <div className="bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700 border-b border-gray-200 text-center">
+    <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <div className="bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700 border-b border-gray-200 text-center sticky top-0 z-10">
         {monthStart.format('MMMM YYYY')}
       </div>
       <div className="grid grid-cols-7 text-[10px] text-gray-400 border-b border-gray-100">
@@ -325,54 +330,56 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
           <div key={d} className="text-center py-1">{d}</div>
         ))}
       </div>
-      <div className="grid grid-cols-7 flex-1">
-        {days.map((day, i) => {
-          const inMonth = day.month() === monthStart.month()
-          const dateObj = day.toDate()
-          const daySchedules = getDaySchedules(dateObj)
-          const dayLeaves = getDayLeaves(dateObj)
-          const holiday = isCompanyHoliday(dateObj)
-          const dow = day.day()
-          const isWeekend = dow === 0 || dow === 6
-          const isToday = day.isSame(moment(), 'day')
-          let bg = '#FFFFFF'
-          if (holiday) bg = '#FEE2E2'
-          else if (isWeekend) bg = '#F3F4F6'
-          return (
-            <div
-              key={i}
-              onClick={() => onSelectDate(dateObj)}
-              className="border-b border-r border-gray-50 cursor-pointer hover:bg-blue-50 transition-colors"
-              style={{ minHeight: '90px', backgroundColor: !inMonth ? '#FAFAFA' : bg, padding: '4px', opacity: inMonth ? 1 : 0.35 }}
-            >
-              <div className="flex items-center justify-between px-1">
-                <span className={`text-xs ${isToday ? 'font-bold text-blue-600' : 'text-gray-500'}`}>{day.format('D')}</span>
-                {dayLeaves.length > 0 && (
-                  <span className="text-[10px]" title={dayLeaves.map(l => l.name).join(', ')}>🏖</span>
-                )}
+      {weeks.map((week, wi) => (
+        <div key={wi} className="grid grid-cols-7">
+          {week.map((day, i) => {
+            const inMonth = day.month() === monthStart.month()
+            const dateObj = day.toDate()
+            const daySchedules = getDaySchedules(dateObj)
+            const dayLeaves = getDayLeaves(dateObj)
+            const holiday = isCompanyHoliday(dateObj)
+            const dow = day.day()
+            const isWeekend = dow === 0 || dow === 6
+            const isToday = day.isSame(moment(), 'day')
+            let bg = '#FFFFFF'
+            if (holiday) bg = '#FEE2E2'
+            else if (isWeekend) bg = '#F3F4F6'
+            return (
+              <div
+                key={i}
+                onClick={() => onSelectDate(dateObj)}
+                className="border-b border-r border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors overflow-hidden"
+                style={{ height: '88px', backgroundColor: !inMonth ? '#FAFAFA' : bg, padding: '4px', opacity: inMonth ? 1 : 0.35 }}
+              >
+                <div className="flex items-center justify-between px-1">
+                  <span className={`text-xs ${isToday ? 'font-bold text-blue-600' : 'text-gray-500'}`}>{day.format('D')}</span>
+                  {dayLeaves.length > 0 && (
+                    <span className="text-[10px]" title={dayLeaves.map(l => l.name).join(', ')}>🏖</span>
+                  )}
+                </div>
+                <div className="flex flex-col gap-0.5 mt-0.5">
+                  {daySchedules.slice(0, 3).map(s => {
+                    const color = projects.find(p => p.name === s.projectName)?.color || s.color || '#3B82F6'
+                    return (
+                      <div
+                        key={s.id}
+                        title={s.notes ? `${s.projectName} · ${s.notes}` : s.projectName}
+                        className="text-[10px] px-1 rounded truncate text-white leading-tight"
+                        style={{ backgroundColor: color }}
+                      >
+                        {s.projectName}
+                      </div>
+                    )
+                  })}
+                  {daySchedules.length > 3 && (
+                    <div className="text-[10px] text-gray-400 px-1">+{daySchedules.length - 3}</div>
+                  )}
+                </div>
               </div>
-              <div className="flex flex-col gap-0.5 mt-0.5">
-                {daySchedules.slice(0, 3).map(s => {
-                  const color = projects.find(p => p.name === s.projectName)?.color || s.color || '#3B82F6'
-                  return (
-                    <div
-                      key={s.id}
-                      title={s.notes ? `${s.projectName} · ${s.notes}` : s.projectName}
-                      className="text-[10px] px-1 rounded truncate text-white leading-tight"
-                      style={{ backgroundColor: color }}
-                    >
-                      {s.projectName}
-                    </div>
-                  )
-                })}
-                {daySchedules.length > 3 && (
-                  <div className="text-[10px] text-gray-400 px-1">+{daySchedules.length - 3}</div>
-                )}
-              </div>
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
+      ))}
     </div>
   )
 }
@@ -403,7 +410,7 @@ function QuarterView({ currentDate, schedules, projects, leaves, isCompanyHolida
   }
 
   return (
-    <div className="flex flex-col gap-4 max-h-[75vh] overflow-y-auto pr-1">
+    <div className="flex flex-col gap-4 overflow-y-auto pr-1" style={{ height: '70vh' }}>
       {months.map(monthStart => (
         <MonthMiniGrid
           key={monthStart.format('YYYY-MM')}

@@ -205,15 +205,8 @@ function StockWidget({ refreshInterval = 120, slideInterval = 60 }: { refreshInt
   )
 }
 
-const VIEW_LABELS: Record<string, string> = {
-  month: 'เดือน',
-  week: 'สัปดาห์',
-  day: 'วัน',
-}
-
-function CustomToolbar({ label, onNavigate, onView, view, views, date }: any) {
+function CustomToolbar({ onNavigate, date }: any) {
   const monthLabel = moment(date).format('MMMM YYYY')
-  const viewList: string[] = Array.isArray(views) ? views : Object.keys(views || {})
   return (
     <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
       <div className="flex items-center gap-2">
@@ -232,17 +225,6 @@ function CustomToolbar({ label, onNavigate, onView, view, views, date }: any) {
       </div>
       <h3 className="text-lg font-semibold text-gray-800">{monthLabel}</h3>
       <div className="flex items-center gap-2">
-        {viewList.map((v) => (
-          <button
-            key={v}
-            onClick={() => onView(v)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              view === v ? 'bg-blue-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-            }`}
-          >
-            {VIEW_LABELS[v] || v}
-          </button>
-        ))}
         <button
           onClick={() => onNavigate('TODAY')}
           className="px-3 py-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700 text-sm font-medium transition-colors"

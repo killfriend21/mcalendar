@@ -8,6 +8,7 @@ import 'moment/locale/th'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 
 moment.locale('th')
+moment.updateLocale('th', { week: { dow: 1, doy: 4 } }) // ISO 8601: week starts Monday
 
 const localizer = momentLocalizer(moment)
 

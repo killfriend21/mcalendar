@@ -9,7 +9,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const body = await req.json()
   const milestone = await prisma.projectMilestone.create({
-    data: { projectName: body.projectName, label: body.label, date: new Date(body.date), done: body.done ?? false, order: body.order ?? 0 },
+    data: { projectName: body.projectName, label: body.label, date: new Date(body.date), status: body.status ?? 'pending', order: body.order ?? 0 },
   })
   return NextResponse.json(milestone)
 }
@@ -21,7 +21,7 @@ export async function PUT(req: Request) {
     data: {
       ...(body.label !== undefined && { label: body.label }),
       ...(body.date !== undefined && { date: new Date(body.date) }),
-      ...(body.done !== undefined && { done: body.done }),
+      ...(body.status !== undefined && { status: body.status }),
       ...(body.order !== undefined && { order: body.order }),
     },
   })

@@ -16,38 +16,39 @@ interface Milestone {
   projectName: string
   label: string
   date: string
-  done: boolean
+  status: string
   order: number
 }
 
-const STATUS_COLORS = {
-  done: { bg: '#D1FAE5', border: '#10B981', dot: '#10B981', text: '#065F46' },
-  pending: { bg: '#F3F4F6', border: '#9CA3AF', dot: '#9CA3AF', text: '#6B7280' },
-  active: { bg: '#EFF6FF', border: '#3B82F6', dot: '#3B82F6', text: '#1D4ED8' },
+interface StatusDef {
+  id: number
+  name: string
+  label: string
+  color: string
+  bgColor: string
+  order: number
 }
 
-function getMilestoneStatus(m: Milestone): 'done' | 'active' | 'pending' {
-  if (m.done) return 'done'
-  if (moment(m.date).isBefore(moment(), 'day')) return 'active' // overdue but not done
-  if (moment(m.date).isSame(moment(), 'day') || moment(m.date).diff(moment(), 'days') <= 30) return 'active'
-  return 'pending'
-}
+const FALLBACK_STATUS: StatusDef = { id: 0, name: 'pending', label: 'รอ', color: '#9CA3AF', bgColor: '#F3F4F6', order: 0 }
 
 export default function TimelinePage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [milestones, setMilestones] = useState<Milestone[]>([])
+  const [statusDefs, setStatusDefs] = useState<StatusDef[]>([])
   const [editingMilestone, setEditingMilestone] = useState<Milestone | null>(null)
   const [addingTo, setAddingTo] = useState<string | null>(null)
-  const [form, setForm] = useState({ label: '', date: '', done: false })
+  const [form, setForm] = useState({ label: '', date: '', status: 'pending' })
   const [yearOffset, setYearOffset] = useState(0)
 
   const fetchAll = useCallback(async () => {
-    const [p, m] = await Promise.all([
+    const [p, m, s] = await Promise.all([
       fetch('/api/admin/projects').then(r => r.json()),
       fetch('/api/admin/project-milestones').then(r => r.json()),
+      fetch('/api/admin/milestone-statuses').then(r => r.json()),
     ])
     setProjects(Array.isArray(p) ? p : [])
     setMilestones(Array.isArray(m) ? m : [])
+    setStatusDefs(Array.isArray(s) ? s : [])
   }, [])
 
   useEffect(() => { fetchAll() }, [fetchAll])
@@ -65,22 +66,17 @@ export default function TimelinePage() {
     fetchAll()
   }
 
-  const toggleDone = async (m: Milestone) => {
-    await fetch('/api/admin/project-milestones', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: m.id, done: !m.done }) })
-    fetchAll()
-  }
-
   const saveMilestone = async () => {
     if (!form.label || !form.date) return
     if (editingMilestone) {
-      await fetch('/api/admin/project-milestones', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editingMilestone.id, label: form.label, date: form.date, done: form.done }) })
+      await fetch('/api/admin/project-milestones', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editingMilestone.id, label: form.label, date: form.date, status: form.status }) })
     } else if (addingTo) {
       const projectMilestones = milestones.filter(m => m.projectName === addingTo)
-      await fetch('/api/admin/project-milestones', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ projectName: addingTo, label: form.label, date: form.date, done: form.done, order: projectMilestones.length }) })
+      await fetch('/api/admin/project-milestones', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ projectName: addingTo, label: form.label, date: form.date, status: form.status, order: projectMilestones.length }) })
     }
     setEditingMilestone(null)
     setAddingTo(null)
-    setForm({ label: '', date: '', done: false })
+    setForm({ label: '', date: '', status: 'pending' })
     fetchAll()
   }
 
@@ -108,19 +104,19 @@ export default function TimelinePage() {
   const openEdit = (m: Milestone) => {
     setEditingMilestone(m)
     setAddingTo(null)
-    setForm({ label: m.label, date: moment(m.date).format('YYYY-MM-DD'), done: m.done })
+    setForm({ label: m.label, date: moment(m.date).format('YYYY-MM-DD'), status: m.status })
   }
 
   const openAdd = (projectName: string) => {
     setAddingTo(projectName)
     setEditingMilestone(null)
-    setForm({ label: '', date: `${year}-01-01`, done: false })
+    setForm({ label: '', date: `${year}-01-01`, status: 'pending' })
   }
 
   const closeModal = () => {
     setEditingMilestone(null)
     setAddingTo(null)
-    setForm({ label: '', date: '', done: false })
+    setForm({ label: '', date: '', status: 'pending' })
   }
 
   return (
@@ -187,17 +183,17 @@ export default function TimelinePage() {
                       className="text-gray-300 hover:text-gray-500 disabled:opacity-20 text-[10px] leading-none"
                     >▼</button>
                   </div>
-                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: proj.color }} />
-                  <span className="text-sm font-semibold text-gray-700 truncate">{proj.name}</span>
                   <button
                     onClick={() => openAdd(proj.name)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-indigo-400 hover:text-indigo-600 text-xs ml-auto flex-shrink-0"
+                    className="flex-shrink-0 w-5 h-5 rounded-full border border-indigo-300 bg-indigo-50 hover:bg-indigo-600 text-indigo-500 hover:text-white transition-colors text-xs flex items-center justify-center font-bold leading-none"
                     title="เพิ่ม milestone"
                   >+</button>
+                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: proj.color }} />
+                  <span className="text-sm font-semibold text-gray-700 truncate">{proj.name}</span>
                 </div>
 
                 {/* Timeline track */}
-                <div className="flex-1 relative" style={{ height: '72px' }}>
+                <div className="flex-1 relative overflow-hidden" style={{ height: '72px' }}>
                   {/* Month grid lines */}
                   <div className="absolute inset-0 flex pointer-events-none">
                     {months.map((m, mi) => (
@@ -230,34 +226,61 @@ export default function TimelinePage() {
 
                   {/* Milestone dots */}
                   {yearMilestones.map((m) => {
-                    const status = getMilestoneStatus(m)
-                    const colors = STATUS_COLORS[status]
+                    const statusDef = statusDefs.find(s => s.name === m.status) ?? FALLBACK_STATUS
                     const pct = xPct(m.date)
+                    // Clamp dot so it stays fully inside the track (never clips at edges)
+                    const isLeft = pct <= 1
+                    const isRight = pct >= 99
+                    const dotLeft = isLeft ? '6px' : isRight ? 'calc(100% - 6px)' : `${pct}%`
+                    const dotTransform = isLeft || isRight ? 'translateY(-50%)' : 'translate(-50%, -50%)'
+                    // Label/date offset from dot
+                    const textAlign: React.CSSProperties = isLeft
+                      ? { left: '20px' }
+                      : isRight
+                        ? { right: '20px' }
+                        : pct <= 15
+                          ? { left: `calc(${pct}% + 10px)` }
+                          : pct >= 85
+                            ? { left: `calc(${pct}% - 10px)`, transform: 'translateX(-100%)' }
+                            : { left: `${pct}%`, transform: 'translateX(-50%)' }
                     return (
-                      <div
-                        key={m.id}
-                        className="absolute flex flex-col items-center cursor-pointer"
-                        style={{ left: `${pct}%`, top: '50%', transform: 'translate(-50%, -50%)', zIndex: 2 }}
-                        onClick={() => openEdit(m)}
-                      >
-                        {/* Label above */}
+                      <React.Fragment key={m.id}>
+                        {/* Label above dot */}
                         <div
-                          className="mb-1 text-[10px] font-semibold whitespace-nowrap px-1.5 py-0.5 rounded"
-                          style={{ background: colors.bg, color: colors.text, border: `1px solid ${colors.border}`, maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                          className="absolute text-[10px] font-semibold whitespace-nowrap px-1.5 py-0.5 rounded cursor-pointer"
+                          style={{
+                            top: '4px',
+                            ...textAlign,
+                            background: statusDef.bgColor, color: statusDef.color, border: `1px solid ${statusDef.color}`,
+                            maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis',
+                            zIndex: 3,
+                          }}
                           title={m.label}
+                          onClick={() => openEdit(m)}
                         >
-                          {m.done ? '✓ ' : ''}{m.label}
+                          {m.status === 'done' ? '✓ ' : ''}{m.label}
                         </div>
-                        {/* Dot */}
+                        {/* Dot at center */}
                         <div
-                          className="rounded-full border-2 bg-white flex-shrink-0"
-                          style={{ width: '12px', height: '12px', borderColor: colors.dot, background: m.done ? colors.dot : 'white' }}
+                          className="absolute rounded-full border-2 cursor-pointer"
+                          style={{
+                            width: '12px', height: '12px',
+                            left: dotLeft, top: '50%',
+                            transform: dotTransform,
+                            borderColor: statusDef.color, background: m.status === 'done' ? statusDef.color : 'white',
+                            zIndex: 3,
+                          }}
+                          onClick={() => openEdit(m)}
                         />
-                        {/* Date below */}
-                        <div className="mt-0.5 text-[9px] text-gray-400 whitespace-nowrap">
+                        {/* Date below dot */}
+                        <div
+                          className="absolute text-[9px] text-gray-400 whitespace-nowrap cursor-pointer"
+                          style={{ bottom: '4px', ...textAlign, zIndex: 3 }}
+                          onClick={() => openEdit(m)}
+                        >
                           {moment(m.date).format('D MMM')}
                         </div>
-                      </div>
+                      </React.Fragment>
                     )
                   })}
 
@@ -289,10 +312,10 @@ export default function TimelinePage() {
         {/* Legend */}
         <div className="mt-6 flex items-center gap-4 text-xs text-gray-500">
           <span className="font-medium">สถานะ:</span>
-          {Object.entries(STATUS_COLORS).map(([key, c]) => (
-            <span key={key} className="flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: c.dot }} />
-              <span style={{ color: c.text }}>{key === 'done' ? 'เสร็จ' : key === 'active' ? 'กำลังมาถึง' : 'รอ'}</span>
+          {statusDefs.map(s => (
+            <span key={s.name} className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: s.color }} />
+              <span style={{ color: s.color }}>{s.label}</span>
             </span>
           ))}
           <span className="ml-4 flex items-center gap-1"><span className="w-4 h-px bg-red-300 inline-block" /> วันนี้</span>
@@ -325,10 +348,18 @@ export default function TimelinePage() {
                   onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
                 />
               </div>
-              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                <input type="checkbox" checked={form.done} onChange={e => setForm(f => ({ ...f, done: e.target.checked }))} className="accent-indigo-600" />
-                เสร็จแล้ว
-              </label>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">สถานะ</label>
+                <select
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  value={form.status}
+                  onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
+                >
+                  {statusDefs.map(s => (
+                    <option key={s.name} value={s.name}>{s.label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
             <div className="flex gap-2 mt-5">
               <button onClick={saveMilestone} className="flex-1 bg-indigo-600 text-white text-sm py-2 rounded-lg hover:bg-indigo-700">

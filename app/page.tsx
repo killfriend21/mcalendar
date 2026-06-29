@@ -30,6 +30,15 @@ interface StockSymbol {
   label: string | null
 }
 
+interface Milestone {
+  id: number
+  projectName: string
+  label: string
+  date: string
+  done: boolean
+  order: number
+}
+
 function StockWidget({ refreshInterval = 120, slideInterval = 60, compact = false }: { refreshInterval?: number; slideInterval?: number; compact?: boolean }) {
   const [symbols, setSymbols] = useState<StockSymbol[]>([])
   const [currentIdx, setCurrentIdx] = useState(0)
@@ -271,9 +280,10 @@ function CustomToolbar({ onNavigate, date }: any) {
   )
 }
 
-function DateCellWrapper({ children, value, leaves }: { children: React.ReactNode; value: Date; leaves: Leave[] }) {
+function DateCellWrapper({ children, value, leaves, milestones = [] }: { children: React.ReactNode; value: Date; leaves: Leave[]; milestones?: Milestone[] }) {
   const dayStr = moment(value).format('YYYY-MM-DD')
   const dayLeaves = leaves.filter(l => dayStr >= moment(l.startDate).format('YYYY-MM-DD') && dayStr <= moment(l.endDate).format('YYYY-MM-DD'))
+  const dayMilestones = milestones.filter(m => moment(m.date).format('YYYY-MM-DD') === dayStr)
   const child = children as React.ReactElement<{ style?: React.CSSProperties; className?: string }>
   const styledChild = React.cloneElement(child, {
     style: { ...child.props.style, height: '100%', width: '100%' },
@@ -281,24 +291,28 @@ function DateCellWrapper({ children, value, leaves }: { children: React.ReactNod
   return (
     <div
       className={child.props.className}
-      style={{
-        position: 'relative',
-        height: '100%',
-        flex: '1 1 0%',
-        width: '100%',
-      }}
+      style={{ position: 'relative', height: '100%', flex: '1 1 0%', width: '100%' }}
     >
       {styledChild}
-      {dayLeaves.length > 0 && (
-        <div style={{ position: 'absolute', bottom: 2, left: 2, right: 2, display: 'flex', zIndex: 1 }}>
+      <div style={{ position: 'absolute', bottom: 2, left: 2, right: 2, display: 'flex', flexDirection: 'column', gap: '1px', zIndex: 1 }}>
+        {dayMilestones.map(m => (
+          <span
+            key={m.id}
+            title={`${m.projectName}: ${m.label}`}
+            style={{ fontSize: '9px', background: '#FEF3C7', color: '#92400E', borderRadius: '4px', padding: '0 4px', lineHeight: '14px', fontWeight: 600, pointerEvents: 'auto', cursor: 'default', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+          >
+            ★ {m.projectName}: {m.label}
+          </span>
+        ))}
+        {dayLeaves.length > 0 && (
           <span
             title={dayLeaves.map(l => l.name).join(', ')}
             style={{ fontSize: '9px', background: '#FDE68A', color: '#92400E', borderRadius: '4px', padding: '0 4px', lineHeight: '14px', fontWeight: 600, pointerEvents: 'auto', cursor: 'default' }}
           >
             🏖{dayLeaves.length > 1 ? ` ${dayLeaves.length}` : ''}
           </span>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
@@ -358,13 +372,14 @@ function QuarterToolbar({ currentDate, onPrev, onNext, onToday }: { currentDate:
   )
 }
 
-function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHoliday, projects, projectTasks, onSelectDate }: {
+function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHoliday, projects, projectTasks, milestones, onSelectDate }: {
   monthStart: moment.Moment
   getDaySchedules: (date: Date) => Schedule[]
   getDayLeaves: (date: Date) => Leave[]
   isCompanyHoliday: (date: Date) => { date: string; name: string; color: string } | undefined
   projects: { id: number; name: string; color: string }[]
   projectTasks: ProjectTask[]
+  milestones: Milestone[]
   onSelectDate: (date: Date) => void
 }) {
   const startOfGrid = moment(monthStart).startOf('week')
@@ -400,8 +415,10 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
           {week.map((day, i) => {
             const inMonth = day.month() === monthStart.month()
             const dateObj = day.toDate()
+            const dayStr = day.format('YYYY-MM-DD')
             const daySchedules = getDaySchedules(dateObj)
             const dayLeaves = getDayLeaves(dateObj)
+            const dayMilestones = inMonth ? milestones.filter(m => moment(m.date).format('YYYY-MM-DD') === dayStr) : []
             const holiday = isCompanyHoliday(dateObj)
             const dow = day.day()
             const isWeekend = dow === 0 || dow === 6
@@ -449,6 +466,13 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
                     <div className="text-[10px] text-gray-400 px-1">+{daySchedules.length - 4}</div>
                   )}
                 </div>
+                {dayMilestones.map(m => (
+                  <div key={m.id} className="flex items-center px-1 mt-0.5 flex-shrink-0">
+                    <span title={`${m.projectName}: ${m.label}`} style={{ fontSize: '10px', background: '#FEF3C7', color: '#92400E', borderRadius: '3px', padding: '0 3px', lineHeight: '14px', fontWeight: 600, cursor: 'default', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>
+                      ★ {m.projectName}: {m.label}
+                    </span>
+                  </div>
+                ))}
                 {inMonth && dayLeaves.length > 0 && (
                   <div className="flex items-center px-1 mt-0.5 flex-shrink-0">
                     <span title={dayLeaves.map(l => l.name).join(', ')} style={{ fontSize: '11px', lineHeight: '12px', cursor: 'default' }}>
@@ -465,12 +489,13 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
   )
 }
 
-function QuarterView({ currentDate, schedules, projects, leaves, projectTasks, isCompanyHoliday, onSelectDate, showLeaves }: {
+function QuarterView({ currentDate, schedules, projects, leaves, projectTasks, milestones, isCompanyHoliday, onSelectDate, showLeaves }: {
   currentDate: Date
   schedules: Schedule[]
   projects: { id: number; name: string; color: string }[]
   leaves: Leave[]
   projectTasks: ProjectTask[]
+  milestones: Milestone[]
   isCompanyHoliday: (date: Date) => { date: string; name: string; color: string } | undefined
   onSelectDate: (date: Date) => void
   showLeaves: boolean
@@ -504,6 +529,7 @@ function QuarterView({ currentDate, schedules, projects, leaves, projectTasks, i
           isCompanyHoliday={isCompanyHoliday}
           projects={projects}
           projectTasks={projectTasks}
+          milestones={milestones}
           onSelectDate={onSelectDate}
         />
       ))}
@@ -557,6 +583,15 @@ export default function Home() {
   const [calendarMode, setCalendarMode] = useState<'month' | 'quarter'>('month')
   const [calendarView, setCalendarView] = useState<View>(Views.MONTH)
   const [showLeavesInCalendar, setShowLeavesInCalendar] = useState(true)
+
+  // Milestone state
+  const [milestones, setMilestones] = useState<Milestone[]>([])
+  useEffect(() => {
+    fetch('/api/admin/project-milestones')
+      .then(r => r.json())
+      .then(d => setMilestones(Array.isArray(d) ? d : []))
+      .catch(() => {})
+  }, [])
 
   // Leave state
   const [leaves, setLeaves] = useState<Leave[]>([])
@@ -994,6 +1029,7 @@ export default function Home() {
                   projects={projects}
                   leaves={leaves}
                   projectTasks={projectTasks}
+                  milestones={milestones}
                   isCompanyHoliday={isCompanyHoliday}
                   showLeaves={showLeavesInCalendar}
                   onSelectDate={(date) => {
@@ -1061,11 +1097,9 @@ export default function Home() {
               components={{
                 toolbar: () => null,
                 month: { dateHeader: HolidayDateHeader },
-                ...(showLeavesInCalendar && {
-                  dateCellWrapper: (props: { children: React.ReactNode; value: Date }) => (
-                    <DateCellWrapper {...props} leaves={leaves} />
-                  ),
-                }),
+                dateCellWrapper: (props: { children: React.ReactNode; value: Date }) => (
+                  <DateCellWrapper {...props} leaves={showLeavesInCalendar ? leaves : []} milestones={milestones} />
+                ),
               }}
               />
               </div>

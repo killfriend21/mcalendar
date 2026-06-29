@@ -8,8 +8,9 @@ import ColorPicker from '@/components/ColorPicker'
 interface Member { id: number; name: string; role: string | null }
 interface Project { id: number; name: string; color: string }
 interface CompanyHoliday { id: number; date: string; name: string }
+interface StatusDef { id: number; name: string; label: string; color: string; bgColor: string; order: number }
 
-type Tab = 'members' | 'projects' | 'holidays' | 'stocks' | 'general'
+type Tab = 'members' | 'projects' | 'holidays' | 'stocks' | 'statuses' | 'general'
 
 // ─── Shared modal shell ───────────────────────────────────
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
@@ -659,6 +660,130 @@ function StocksTab() {
   )
 }
 
+// ─── Statuses Tab ─────────────────────────────────────────
+function StatusesTab() {
+  const [statuses, setStatuses] = useState<StatusDef[]>([])
+  const [showModal, setShowModal] = useState(false)
+  const [editing, setEditing] = useState<StatusDef | null>(null)
+  const [form, setForm] = useState({ name: '', label: '', color: '#6B7280', bgColor: '#F3F4F6' })
+
+  const fetch_ = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/milestone-statuses')
+      if (!res.ok) return
+      const data = await res.json()
+      setStatuses(Array.isArray(data) ? data : [])
+    } catch {}
+  }, [])
+
+  useEffect(() => { fetch_() }, [fetch_])
+
+  const openAdd = () => { setEditing(null); setForm({ name: '', label: '', color: '#6B7280', bgColor: '#F3F4F6' }); setShowModal(true) }
+  const openEdit = (s: StatusDef) => { setEditing(s); setForm({ name: s.name, label: s.label, color: s.color, bgColor: s.bgColor }); setShowModal(true) }
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      const method = editing ? 'PUT' : 'POST'
+      const body = editing ? { id: editing.id, ...form } : { ...form, order: statuses.length }
+      await fetch('/api/admin/milestone-statuses', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      setShowModal(false)
+      fetch_()
+    } catch {}
+  }
+
+  const del = async (id: number) => {
+    if (!confirm('ลบ status นี้?')) return
+    try {
+      await fetch(`/api/admin/milestone-statuses?id=${id}`, { method: 'DELETE' })
+      fetch_()
+    } catch {}
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-gray-500">{statuses.length} สถานะ</p>
+        <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+          + เพิ่มสถานะ
+        </button>
+      </div>
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        {statuses.length === 0 ? (
+          <p className="text-sm text-gray-400 text-center py-10">ยังไม่มีสถานะ</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="text-left px-4 py-3 text-gray-600 font-medium">ตัวอย่าง</th>
+                <th className="text-left px-4 py-3 text-gray-600 font-medium">Key</th>
+                <th className="text-left px-4 py-3 text-gray-600 font-medium">ชื่อแสดงผล</th>
+                <th className="px-4 py-3 w-24" />
+              </tr>
+            </thead>
+            <tbody>
+              {statuses.map(s => (
+                <tr key={s.id} className="border-t border-gray-100 hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold"
+                      style={{ background: s.bgColor, color: s.color, border: `1px solid ${s.color}` }}>
+                      ● {s.label}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-400 font-mono text-xs">{s.name}</td>
+                  <td className="px-4 py-3 text-gray-700">{s.label}</td>
+                  <td className="px-4 py-3 text-right">
+                    <button onClick={() => openEdit(s)} className="text-blue-600 hover:text-blue-800 text-xs mr-3">แก้ไข</button>
+                    <button onClick={() => del(s.id)} className="text-red-500 hover:text-red-700 text-xs">ลบ</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {showModal && (
+        <Modal title={editing ? 'แก้ไขสถานะ' : 'เพิ่มสถานะ'} onClose={() => setShowModal(false)}>
+          <form onSubmit={submit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Key (ภาษาอังกฤษ ไม่มีช่องว่าง)</label>
+              <input required value={form.name}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value.toLowerCase().replace(/\s+/g, '_') }))}
+                placeholder="เช่น testing, review"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อแสดงผล</label>
+              <input required value={form.label}
+                onChange={e => setForm(f => ({ ...f, label: e.target.value }))}
+                placeholder="เช่น กำลัง Test, รอ Review"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">สีหลัก (dot / ตัวอักษร)</label>
+              <ColorPicker value={form.color} onChange={color => setForm(f => ({ ...f, color }))} variant="vivid" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">สีพื้นหลัง badge</label>
+              <ColorPicker value={form.bgColor} onChange={bgColor => setForm(f => ({ ...f, bgColor }))} />
+            </div>
+            <div className="flex gap-2 pt-1">
+              {editing && (
+                <button type="button" onClick={() => { del(editing.id); setShowModal(false) }}
+                  className="px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-sm">ลบ</button>
+              )}
+              <button type="submit" className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
+                {editing ? 'บันทึก' : 'เพิ่ม'}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+    </div>
+  )
+}
+
 // ─── General Tab ──────────────────────────────────────────
 function GeneralTab() {
   const [settings, setSettings] = useState({ showLeavesInCalendar: 'true' })
@@ -718,6 +843,7 @@ export default function AdminPage() {
     { key: 'projects', label: 'โปรเจกต์' },
     { key: 'holidays', label: 'วันหยุดบริษัท' },
     { key: 'stocks', label: 'หุ้น' },
+    { key: 'statuses', label: 'สถานะ Milestone' },
     { key: 'general', label: 'ทั่วไป' },
   ]
 
@@ -756,6 +882,7 @@ export default function AdminPage() {
         {tab === 'projects' && <ProjectsTab />}
         {tab === 'holidays' && <HolidaysTab />}
         {tab === 'stocks' && <StocksTab />}
+        {tab === 'statuses' && <StatusesTab />}
         {tab === 'general' && <GeneralTab />}
       </div>
     </div>

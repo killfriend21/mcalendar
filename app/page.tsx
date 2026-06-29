@@ -1408,7 +1408,7 @@ export default function Home() {
                   </tr>
                 </thead>
                 <tbody>
-                  {visibleLeaves.map(leave => {
+                  {[...visibleLeaves].sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).map(leave => {
                     const isPast = new Date(leave.endDate) < new Date(new Date().setHours(0,0,0,0))
                     return (
                       <tr key={leave.id} className="border-t border-gray-50 hover:bg-gray-50 group">

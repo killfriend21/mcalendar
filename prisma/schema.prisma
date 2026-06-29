@@ -42,7 +42,18 @@ model Project {
   id        Int      @id @default(autoincrement())
   name      String
   color     String   @default("#3B82F6")
+  order     Int      @default(0)
   createdAt DateTime @default(now())
+}
+
+model ProjectMilestone {
+  id          Int      @id @default(autoincrement())
+  projectName String
+  label       String
+  date        DateTime
+  done        Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
 }
 
 model CompanyHoliday {

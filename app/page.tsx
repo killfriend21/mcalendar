@@ -954,6 +954,9 @@ export default function Home() {
             )}
           </div>
           <div className="flex items-center gap-3">
+            <Link href="/timeline" className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+              📅 Timeline
+            </Link>
             <Link href="/admin" className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
               ⚙ Admin
             </Link>

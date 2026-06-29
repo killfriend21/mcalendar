@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 export async function GET() {
-  const projects = await prisma.project.findMany({ orderBy: { name: 'asc' } })
+  const projects = await prisma.project.findMany({ orderBy: { order: 'asc' } })
   return NextResponse.json(projects)
 }
 
@@ -14,7 +14,14 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   const body = await req.json()
-  const project = await prisma.project.update({ where: { id: body.id }, data: { name: body.name, color: body.color } })
+  const project = await prisma.project.update({
+    where: { id: body.id },
+    data: {
+      ...(body.name !== undefined && { name: body.name }),
+      ...(body.color !== undefined && { color: body.color }),
+      ...(body.order !== undefined && { order: body.order }),
+    },
+  })
   return NextResponse.json(project)
 }
 

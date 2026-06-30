@@ -177,7 +177,11 @@ export default function TimelinePage() {
             const yearMilestones = projMilestones.filter(m => moment(m.date).year() === year)
 
             return (
-              <div key={proj.id} className="flex items-center border-b border-gray-100 last:border-b-0 group" style={{ minHeight: '72px' }}>
+              <div
+                key={proj.id}
+                className={`flex items-center border-b border-gray-100 last:border-b-0 group transition-colors hover:bg-indigo-50 ${pi % 2 === 1 ? 'bg-gray-50' : 'bg-white'}`}
+                style={{ minHeight: '72px' }}
+              >
                 {/* Project label + controls */}
                 <div className="flex items-center gap-2 flex-shrink-0" style={{ width: '180px' }}>
                   <div className="flex flex-col gap-0.5">

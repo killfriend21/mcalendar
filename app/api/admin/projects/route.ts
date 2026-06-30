@@ -2,13 +2,14 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 export async function GET() {
-  const projects = await prisma.project.findMany({ orderBy: { order: 'asc' } })
+  const projects = await prisma.project.findMany({ orderBy: [{ order: 'asc' }, { id: 'asc' }] })
   return NextResponse.json(projects)
 }
 
 export async function POST(req: Request) {
   const body = await req.json()
-  const project = await prisma.project.create({ data: { name: body.name, color: body.color || '#3B82F6' } })
+  const count = await prisma.project.count()
+  const project = await prisma.project.create({ data: { name: body.name, color: body.color || '#3B82F6', order: count } })
   return NextResponse.json(project)
 }
 

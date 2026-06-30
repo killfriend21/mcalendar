@@ -56,15 +56,17 @@ export default function TimelinePage() {
   useEffect(() => { fetchAll() }, [fetchAll])
 
   const moveProject = async (proj: Project, dir: 'up' | 'down') => {
-    const sorted = [...projects].sort((a, b) => a.order - b.order)
+    const sorted = [...projects].sort((a, b) => a.order - b.order || a.id - b.id)
     const idx = sorted.findIndex(p => p.id === proj.id)
     const swapIdx = dir === 'up' ? idx - 1 : idx + 1
     if (swapIdx < 0 || swapIdx >= sorted.length) return
-    const swap = sorted[swapIdx]
-    await Promise.all([
-      fetch('/api/admin/projects', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: proj.id, order: swap.order }) }),
-      fetch('/api/admin/projects', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: swap.id, order: proj.order }) }),
-    ])
+    ;[sorted[idx], sorted[swapIdx]] = [sorted[swapIdx], sorted[idx]]
+    // Renumber everyone sequentially so ties (e.g. all order=0) can't make swaps no-ops.
+    await Promise.all(
+      sorted.map((p, i) =>
+        fetch('/api/admin/projects', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: p.id, order: i }) })
+      )
+    )
     fetchAll()
   }
 
@@ -93,7 +95,7 @@ export default function TimelinePage() {
   const year = moment().year() + yearOffset
   const months = Array.from({ length: 12 }, (_, i) => moment(`${year}-${String(i + 1).padStart(2, '0')}-01`))
   const today = moment()
-  const sortedProjects = [...projects].sort((a, b) => a.order - b.order)
+  const sortedProjects = [...projects].sort((a, b) => a.order - b.order || a.id - b.id)
 
   // X position: fraction of year (0..1) → percentage
   const xPct = (date: string) => {

@@ -51,17 +51,19 @@ model ProjectMilestone {
   projectName String
   label       String
   date        DateTime
-  status      String   @default("pending")
+  type        String   @default("production")
   order       Int      @default(0)
+  scheduleId  Int?     @unique
   createdAt   DateTime @default(now())
 }
 
-model MilestoneStatus {
+model MilestoneType {
   id        Int      @id @default(autoincrement())
   name      String   @unique
   label     String
   color     String   @default("#6B7280")
   bgColor   String   @default("#F3F4F6")
+  priority  Int      @default(2)
   order     Int      @default(0)
   createdAt DateTime @default(now())
 }

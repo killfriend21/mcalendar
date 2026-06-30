@@ -9,19 +9,27 @@ export async function GET() {
 export async function POST(req: Request) {
   const body = await req.json()
   const milestone = await prisma.projectMilestone.create({
-    data: { projectName: body.projectName, label: body.label, date: new Date(body.date), status: body.status ?? 'pending', order: body.order ?? 0 },
+    data: {
+      projectName: body.projectName,
+      label: body.label,
+      date: new Date(body.date),
+      type: body.type ?? 'production',
+      order: body.order ?? 0,
+      scheduleId: body.scheduleId ?? null,
+    },
   })
   return NextResponse.json(milestone)
 }
 
 export async function PUT(req: Request) {
   const body = await req.json()
+  const where = body.id !== undefined ? { id: body.id } : { scheduleId: body.scheduleId }
   const milestone = await prisma.projectMilestone.update({
-    where: { id: body.id },
+    where,
     data: {
       ...(body.label !== undefined && { label: body.label }),
       ...(body.date !== undefined && { date: new Date(body.date) }),
-      ...(body.status !== undefined && { status: body.status }),
+      ...(body.type !== undefined && { type: body.type }),
       ...(body.order !== undefined && { order: body.order }),
     },
   })
@@ -30,6 +38,11 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
   const { searchParams } = new URL(req.url)
+  const scheduleId = searchParams.get('scheduleId')
+  if (scheduleId) {
+    await prisma.projectMilestone.deleteMany({ where: { scheduleId: parseInt(scheduleId) } })
+    return NextResponse.json({ success: true })
+  }
   const id = parseInt(searchParams.get('id') || '0')
   await prisma.projectMilestone.delete({ where: { id } })
   return NextResponse.json({ success: true })

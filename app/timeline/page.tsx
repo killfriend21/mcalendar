@@ -16,39 +16,40 @@ interface Milestone {
   projectName: string
   label: string
   date: string
-  status: string
+  type: string
   order: number
 }
 
-interface StatusDef {
+interface TypeDef {
   id: number
   name: string
   label: string
   color: string
   bgColor: string
+  priority: number
   order: number
 }
 
-const FALLBACK_STATUS: StatusDef = { id: 0, name: 'pending', label: 'รอ', color: '#9CA3AF', bgColor: '#F3F4F6', order: 0 }
+const FALLBACK_TYPE: TypeDef = { id: 0, name: 'production', label: 'Production Event', color: '#2563EB', bgColor: '#DBEAFE', priority: 2, order: 0 }
 
 export default function TimelinePage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [milestones, setMilestones] = useState<Milestone[]>([])
-  const [statusDefs, setStatusDefs] = useState<StatusDef[]>([])
+  const [typeDefs, setTypeDefs] = useState<TypeDef[]>([])
   const [editingMilestone, setEditingMilestone] = useState<Milestone | null>(null)
   const [addingTo, setAddingTo] = useState<string | null>(null)
-  const [form, setForm] = useState({ label: '', date: '', status: 'pending' })
+  const [form, setForm] = useState({ label: '', date: '', type: 'production' })
   const [yearOffset, setYearOffset] = useState(0)
 
   const fetchAll = useCallback(async () => {
-    const [p, m, s] = await Promise.all([
+    const [p, m, ty] = await Promise.all([
       fetch('/api/admin/projects').then(r => r.json()),
       fetch('/api/admin/project-milestones').then(r => r.json()),
-      fetch('/api/admin/milestone-statuses').then(r => r.json()),
+      fetch('/api/admin/milestone-types').then(r => r.json()),
     ])
     setProjects(Array.isArray(p) ? p : [])
     setMilestones(Array.isArray(m) ? m : [])
-    setStatusDefs(Array.isArray(s) ? s : [])
+    setTypeDefs(Array.isArray(ty) ? ty : [])
   }, [])
 
   useEffect(() => { fetchAll() }, [fetchAll])
@@ -69,14 +70,14 @@ export default function TimelinePage() {
   const saveMilestone = async () => {
     if (!form.label || !form.date) return
     if (editingMilestone) {
-      await fetch('/api/admin/project-milestones', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editingMilestone.id, label: form.label, date: form.date, status: form.status }) })
+      await fetch('/api/admin/project-milestones', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editingMilestone.id, label: form.label, date: form.date, type: form.type }) })
     } else if (addingTo) {
       const projectMilestones = milestones.filter(m => m.projectName === addingTo)
-      await fetch('/api/admin/project-milestones', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ projectName: addingTo, label: form.label, date: form.date, status: form.status, order: projectMilestones.length }) })
+      await fetch('/api/admin/project-milestones', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ projectName: addingTo, label: form.label, date: form.date, type: form.type, order: projectMilestones.length }) })
     }
     setEditingMilestone(null)
     setAddingTo(null)
-    setForm({ label: '', date: '', status: 'pending' })
+    setForm({ label: '', date: '', type: 'production' })
     fetchAll()
   }
 
@@ -104,19 +105,19 @@ export default function TimelinePage() {
   const openEdit = (m: Milestone) => {
     setEditingMilestone(m)
     setAddingTo(null)
-    setForm({ label: m.label, date: moment(m.date).format('YYYY-MM-DD'), status: m.status })
+    setForm({ label: m.label, date: moment(m.date).format('YYYY-MM-DD'), type: m.type })
   }
 
   const openAdd = (projectName: string) => {
     setAddingTo(projectName)
     setEditingMilestone(null)
-    setForm({ label: '', date: `${year}-01-01`, status: 'pending' })
+    setForm({ label: '', date: `${year}-01-01`, type: 'production' })
   }
 
   const closeModal = () => {
     setEditingMilestone(null)
     setAddingTo(null)
-    setForm({ label: '', date: '', status: 'pending' })
+    setForm({ label: '', date: '', type: 'production' })
   }
 
   return (
@@ -146,12 +147,14 @@ export default function TimelinePage() {
 
         {/* Today line label */}
         {year === today.year() && (
-          <div className="relative" style={{ paddingLeft: '180px', height: 0 }}>
-            <div
-              className="absolute top-0 bottom-0 z-10 pointer-events-none"
-              style={{ left: `calc(180px + ${todayPct}%)`, transform: 'translateX(-50%)' }}
-            >
-              <span className="text-[9px] font-bold text-red-500 bg-white px-0.5 rounded">{today.format('D MMM')}</span>
+          <div className="flex" style={{ paddingLeft: '180px', height: 0 }}>
+            <div className="relative flex-1">
+              <div
+                className="absolute top-0 z-10 pointer-events-none"
+                style={{ left: `${todayPct}%`, transform: 'translateX(-50%)' }}
+              >
+                <span className="text-[9px] font-bold text-red-500 bg-white px-0.5 rounded">{today.format('D MMM')}</span>
+              </div>
             </div>
           </div>
         )}
@@ -226,13 +229,16 @@ export default function TimelinePage() {
 
                   {/* Milestone dots */}
                   {yearMilestones.map((m) => {
-                    const statusDef = statusDefs.find(s => s.name === m.status) ?? FALLBACK_STATUS
+                    const typeDef = typeDefs.find(t => t.name === m.type) ?? FALLBACK_TYPE
+                    const isGate = typeDef.priority === 1
                     const pct = xPct(m.date)
                     // Clamp dot so it stays fully inside the track (never clips at edges)
                     const isLeft = pct <= 1
                     const isRight = pct >= 99
                     const dotLeft = isLeft ? '6px' : isRight ? 'calc(100% - 6px)' : `${pct}%`
-                    const dotTransform = isLeft || isRight ? 'translateY(-50%)' : 'translate(-50%, -50%)'
+                    const dotBaseTransform = isLeft || isRight ? 'translateY(-50%)' : 'translate(-50%, -50%)'
+                    const dotTransform = isGate ? `${dotBaseTransform} rotate(45deg)` : dotBaseTransform
+                    const dotSize = isGate ? 14 : 12
                     // Label/date offset from dot
                     const textAlign: React.CSSProperties = isLeft
                       ? { left: '20px' }
@@ -245,37 +251,50 @@ export default function TimelinePage() {
                             : { left: `${pct}%`, transform: 'translateX(-50%)' }
                     return (
                       <React.Fragment key={m.id}>
+                        {/* Gate event: full-height highlight line */}
+                        {isGate && (
+                          <div
+                            className="absolute top-0 bottom-0 pointer-events-none"
+                            style={{ left: `${Math.max(0, Math.min(100, pct))}%`, width: '2px', background: typeDef.color, opacity: 0.5, zIndex: 2 }}
+                          />
+                        )}
                         {/* Label above dot */}
                         <div
-                          className="absolute text-[10px] font-semibold whitespace-nowrap px-1.5 py-0.5 rounded cursor-pointer"
+                          className="absolute whitespace-nowrap px-1.5 py-0.5 rounded cursor-pointer"
                           style={{
                             top: '4px',
                             ...textAlign,
-                            background: statusDef.bgColor, color: statusDef.color, border: `1px solid ${statusDef.color}`,
+                            fontSize: isGate ? '10px' : '10px',
+                            fontWeight: isGate ? 800 : 600,
+                            background: typeDef.bgColor, color: typeDef.color,
+                            border: `${isGate ? 2 : 1}px solid ${typeDef.color}`,
                             maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis',
-                            zIndex: 3,
+                            zIndex: isGate ? 4 : 3,
                           }}
-                          title={m.label}
+                          title={`${typeDef.label} — ${m.label}`}
                           onClick={() => openEdit(m)}
                         >
-                          {m.status === 'done' ? '✓ ' : ''}{m.label}
+                          {m.label}
                         </div>
                         {/* Dot at center */}
                         <div
-                          className="absolute rounded-full border-2 cursor-pointer"
+                          className="absolute border-2 cursor-pointer"
                           style={{
-                            width: '12px', height: '12px',
+                            width: `${dotSize}px`, height: `${dotSize}px`,
+                            borderRadius: isGate ? '2px' : '9999px',
                             left: dotLeft, top: '50%',
                             transform: dotTransform,
-                            borderColor: statusDef.color, background: m.status === 'done' ? statusDef.color : 'white',
-                            zIndex: 3,
+                            borderColor: typeDef.color,
+                            borderWidth: isGate ? '3px' : '2px',
+                            background: typeDef.color,
+                            zIndex: isGate ? 4 : 3,
                           }}
                           onClick={() => openEdit(m)}
                         />
                         {/* Date below dot */}
                         <div
                           className="absolute text-[9px] text-gray-400 whitespace-nowrap cursor-pointer"
-                          style={{ bottom: '4px', ...textAlign, zIndex: 3 }}
+                          style={{ bottom: '4px', ...textAlign, zIndex: isGate ? 4 : 3 }}
                           onClick={() => openEdit(m)}
                         >
                           {moment(m.date).format('D MMM')}
@@ -311,11 +330,19 @@ export default function TimelinePage() {
 
         {/* Legend */}
         <div className="mt-6 flex items-center gap-4 text-xs text-gray-500">
-          <span className="font-medium">สถานะ:</span>
-          {statusDefs.map(s => (
-            <span key={s.name} className="flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: s.color }} />
-              <span style={{ color: s.color }}>{s.label}</span>
+          <span className="font-medium">ประเภท:</span>
+          {typeDefs.map(t => (
+            <span key={t.name} className="flex items-center gap-1">
+              <span
+                className="inline-block"
+                style={{
+                  width: '9px', height: '9px',
+                  borderRadius: t.priority === 1 ? '2px' : '9999px',
+                  background: t.color,
+                  transform: t.priority === 1 ? 'rotate(45deg)' : 'none',
+                }}
+              />
+              <span style={{ color: t.color }}>{t.label}</span>
             </span>
           ))}
           <span className="ml-4 flex items-center gap-1"><span className="w-4 h-px bg-red-300 inline-block" /> วันนี้</span>
@@ -349,14 +376,14 @@ export default function TimelinePage() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">สถานะ</label>
+                <label className="block text-xs text-gray-500 mb-1">ประเภท</label>
                 <select
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  value={form.status}
-                  onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
+                  value={form.type}
+                  onChange={e => setForm(f => ({ ...f, type: e.target.value }))}
                 >
-                  {statusDefs.map(s => (
-                    <option key={s.name} value={s.name}>{s.label}</option>
+                  {typeDefs.map(t => (
+                    <option key={t.name} value={t.name}>{t.label}</option>
                   ))}
                 </select>
               </div>

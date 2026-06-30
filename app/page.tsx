@@ -35,9 +35,22 @@ interface Milestone {
   projectName: string
   label: string
   date: string
-  done: boolean
+  type: string
+  order: number
+  scheduleId: number | null
+}
+
+interface TypeDef {
+  id: number
+  name: string
+  label: string
+  color: string
+  bgColor: string
+  priority: number
   order: number
 }
+
+const FALLBACK_TYPE: TypeDef = { id: 0, name: 'production', label: 'Production Event', color: '#2563EB', bgColor: '#DBEAFE', priority: 2, order: 0 }
 
 function StockWidget({ refreshInterval = 120, slideInterval = 60, compact = false }: { refreshInterval?: number; slideInterval?: number; compact?: boolean }) {
   const [symbols, setSymbols] = useState<StockSymbol[]>([])
@@ -280,10 +293,12 @@ function CustomToolbar({ onNavigate, date }: any) {
   )
 }
 
-function DateCellWrapper({ children, value, leaves, milestones = [] }: { children: React.ReactNode; value: Date; leaves: Leave[]; milestones?: Milestone[] }) {
+function DateCellWrapper({ children, value, leaves, milestones = [], typeDefs = [] }: { children: React.ReactNode; value: Date; leaves: Leave[]; milestones?: Milestone[]; typeDefs?: TypeDef[] }) {
   const dayStr = moment(value).format('YYYY-MM-DD')
   const dayLeaves = leaves.filter(l => dayStr >= moment(l.startDate).format('YYYY-MM-DD') && dayStr <= moment(l.endDate).format('YYYY-MM-DD'))
-  const dayMilestones = milestones.filter(m => moment(m.date).format('YYYY-MM-DD') === dayStr)
+  const dayMilestones = milestones
+    .filter(m => moment(m.date).format('YYYY-MM-DD') === dayStr)
+    .filter(m => (typeDefs.find(t => t.name === m.type) ?? FALLBACK_TYPE).priority === 1)
   const child = children as React.ReactElement<{ style?: React.CSSProperties; className?: string }>
   const styledChild = React.cloneElement(child, {
     style: { ...child.props.style, height: '100%', width: '100%' },
@@ -295,15 +310,18 @@ function DateCellWrapper({ children, value, leaves, milestones = [] }: { childre
     >
       {styledChild}
       <div style={{ position: 'absolute', bottom: 2, left: 2, right: 2, display: 'flex', flexDirection: 'column', gap: '1px', zIndex: 1 }}>
-        {dayMilestones.map(m => (
-          <span
-            key={m.id}
-            title={`${m.projectName}: ${m.label}`}
-            style={{ fontSize: '9px', background: '#FEF3C7', color: '#92400E', borderRadius: '4px', padding: '0 4px', lineHeight: '14px', fontWeight: 600, pointerEvents: 'auto', cursor: 'default', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-          >
-            ★ {m.projectName}: {m.label}
-          </span>
-        ))}
+        {dayMilestones.map(m => {
+          const typeDef = typeDefs.find(t => t.name === m.type) ?? FALLBACK_TYPE
+          return (
+            <span
+              key={m.id}
+              title={`${typeDef.label} — ${m.projectName}: ${m.label}`}
+              style={{ fontSize: '9px', background: typeDef.bgColor, color: typeDef.color, border: typeDef.priority === 1 ? `1px solid ${typeDef.color}` : undefined, borderRadius: '4px', padding: '0 4px', lineHeight: '14px', fontWeight: 600, pointerEvents: 'auto', cursor: 'default', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+            >
+              ★ {m.projectName}: {m.label}
+            </span>
+          )
+        })}
         {dayLeaves.length > 0 && (
           <span
             title={dayLeaves.map(l => l.name).join(', ')}
@@ -372,7 +390,7 @@ function QuarterToolbar({ currentDate, onPrev, onNext, onToday }: { currentDate:
   )
 }
 
-function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHoliday, projects, projectTasks, milestones, onSelectDate }: {
+function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHoliday, projects, projectTasks, milestones, typeDefs, onSelectDate }: {
   monthStart: moment.Moment
   getDaySchedules: (date: Date) => Schedule[]
   getDayLeaves: (date: Date) => Leave[]
@@ -380,6 +398,7 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
   projects: { id: number; name: string; color: string }[]
   projectTasks: ProjectTask[]
   milestones: Milestone[]
+  typeDefs: TypeDef[]
   onSelectDate: (date: Date) => void
 }) {
   const startOfGrid = moment(monthStart).startOf('week')
@@ -418,7 +437,11 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
             const dayStr = day.format('YYYY-MM-DD')
             const daySchedules = getDaySchedules(dateObj)
             const dayLeaves = getDayLeaves(dateObj)
-            const dayMilestones = inMonth ? milestones.filter(m => moment(m.date).format('YYYY-MM-DD') === dayStr) : []
+            const dayMilestones = inMonth
+              ? milestones
+                  .filter(m => moment(m.date).format('YYYY-MM-DD') === dayStr)
+                  .filter(m => (typeDefs.find(t => t.name === m.type) ?? FALLBACK_TYPE).priority === 1)
+              : []
             const holiday = isCompanyHoliday(dateObj)
             const dow = day.day()
             const isWeekend = dow === 0 || dow === 6
@@ -466,13 +489,16 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
                     <div className="text-[10px] text-gray-400 px-1">+{daySchedules.length - 4}</div>
                   )}
                 </div>
-                {dayMilestones.map(m => (
-                  <div key={m.id} className="flex items-center px-1 mt-0.5 flex-shrink-0">
-                    <span title={`${m.projectName}: ${m.label}`} style={{ fontSize: '10px', background: '#FEF3C7', color: '#92400E', borderRadius: '3px', padding: '0 3px', lineHeight: '14px', fontWeight: 600, cursor: 'default', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>
-                      ★ {m.projectName}: {m.label}
-                    </span>
-                  </div>
-                ))}
+                {dayMilestones.map(m => {
+                  const typeDef = typeDefs.find(t => t.name === m.type) ?? FALLBACK_TYPE
+                  return (
+                    <div key={m.id} className="flex items-center px-1 mt-0.5 flex-shrink-0">
+                      <span title={`${typeDef.label} — ${m.projectName}: ${m.label}`} style={{ fontSize: '10px', background: typeDef.bgColor, color: typeDef.color, border: typeDef.priority === 1 ? `1px solid ${typeDef.color}` : undefined, borderRadius: '3px', padding: '0 3px', lineHeight: '14px', fontWeight: 600, cursor: 'default', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>
+                        ★ {m.projectName}: {m.label}
+                      </span>
+                    </div>
+                  )
+                })}
                 {inMonth && dayLeaves.length > 0 && (
                   <div className="flex items-center px-1 mt-0.5 flex-shrink-0">
                     <span title={dayLeaves.map(l => l.name).join(', ')} style={{ fontSize: '11px', lineHeight: '12px', cursor: 'default' }}>
@@ -489,13 +515,14 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
   )
 }
 
-function QuarterView({ currentDate, schedules, projects, leaves, projectTasks, milestones, isCompanyHoliday, onSelectDate, showLeaves }: {
+function QuarterView({ currentDate, schedules, projects, leaves, projectTasks, milestones, typeDefs, isCompanyHoliday, onSelectDate, showLeaves }: {
   currentDate: Date
   schedules: Schedule[]
   projects: { id: number; name: string; color: string }[]
   leaves: Leave[]
   projectTasks: ProjectTask[]
   milestones: Milestone[]
+  typeDefs: TypeDef[]
   isCompanyHoliday: (date: Date) => { date: string; name: string; color: string } | undefined
   onSelectDate: (date: Date) => void
   showLeaves: boolean
@@ -530,6 +557,7 @@ function QuarterView({ currentDate, schedules, projects, leaves, projectTasks, m
           projects={projects}
           projectTasks={projectTasks}
           milestones={milestones}
+          typeDefs={typeDefs}
           onSelectDate={onSelectDate}
         />
       ))}
@@ -586,11 +614,17 @@ export default function Home() {
 
   // Milestone state
   const [milestones, setMilestones] = useState<Milestone[]>([])
+  const [milestoneTypes, setMilestoneTypes] = useState<TypeDef[]>([])
+  const fetchMilestones = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/project-milestones')
+      const data = await res.json()
+      setMilestones(Array.isArray(data) ? data : [])
+    } catch {}
+  }, [])
+  useEffect(() => { fetchMilestones() }, [fetchMilestones])
   useEffect(() => {
-    fetch('/api/admin/project-milestones')
-      .then(r => r.json())
-      .then(d => setMilestones(Array.isArray(d) ? d : []))
-      .catch(() => {})
+    fetch('/api/admin/milestone-types').then(r => r.json()).then(data => setMilestoneTypes(Array.isArray(data) ? data : [])).catch(() => {})
   }, [])
 
   // Leave state
@@ -797,7 +831,8 @@ export default function Home() {
     peopleCount: '',
     members: '',
     notes: '',
-    color: '#3B82F6'
+    color: '#3B82F6',
+    milestoneType: 'test'
   })
 
   const fetchSchedules = useCallback(async () => {
@@ -871,6 +906,7 @@ export default function Home() {
   const handleSelectEvent = (event: { resource: Schedule }) => {
     const s = event.resource
     setSelectedEvent(s)
+    const linkedMilestone = milestones.find(m => m.scheduleId === s.id)
     setFormData({
       date: moment(s.date).format('YYYY-MM-DD'),
       endDate: s.endDate ? moment(s.endDate).format('YYYY-MM-DD') : '',
@@ -878,7 +914,8 @@ export default function Home() {
       peopleCount: s.peopleCount.toString(),
       members: s.members,
       notes: s.notes || '',
-      color: s.color || '#3B82F6'
+      color: s.color || '#3B82F6',
+      milestoneType: linkedMilestone?.type || 'test'
     })
     setIsEditing(true)
     setShowModal(true)
@@ -902,10 +939,10 @@ export default function Home() {
       })
 
       if (res.ok) {
+        const taskTitle = formData.notes?.trim() || formData.members
         if (!isEditing) {
           const savedSchedule = await res.json().catch(() => null)
           const newScheduleId = savedSchedule?.id ?? null
-          const taskTitle = formData.notes?.trim() || formData.members
           await fetch('/api/project-tasks', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -920,7 +957,28 @@ export default function Home() {
             }),
           })
           fetchProjectTasks()
+          await fetch('/api/admin/project-milestones', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              projectName: formData.projectName,
+              label: taskTitle,
+              date: formData.date,
+              type: formData.milestoneType,
+              scheduleId: newScheduleId,
+            }),
+          })
+        } else if (selectedEvent) {
+          const linkedMilestone = milestones.find(m => m.scheduleId === selectedEvent.id)
+          if (linkedMilestone) {
+            await fetch('/api/admin/project-milestones', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: linkedMilestone.id, label: taskTitle, date: formData.date, type: formData.milestoneType }),
+            })
+          }
         }
+        fetchMilestones()
         setShowModal(false)
         fetchSchedules()
         resetForm()
@@ -943,6 +1001,8 @@ export default function Home() {
           await fetch(`/api/project-tasks?id=${linkedTask.id}`, { method: 'DELETE' })
           fetchProjectTasks()
         }
+        await fetch(`/api/admin/project-milestones?scheduleId=${selectedEvent.id}`, { method: 'DELETE' })
+        fetchMilestones()
         setShowModal(false)
         fetchSchedules()
         resetForm()
@@ -960,7 +1020,8 @@ export default function Home() {
       peopleCount: '',
       members: '',
       notes: '',
-      color: '#3B82F6'
+      color: '#3B82F6',
+      milestoneType: 'test'
     })
     setSelectedEvent(null)
     setIsEditing(false)
@@ -1030,6 +1091,7 @@ export default function Home() {
                   leaves={leaves}
                   projectTasks={projectTasks}
                   milestones={milestones}
+                  typeDefs={milestoneTypes}
                   isCompanyHoliday={isCompanyHoliday}
                   showLeaves={showLeavesInCalendar}
                   onSelectDate={(date) => {
@@ -1098,7 +1160,7 @@ export default function Home() {
                 toolbar: () => null,
                 month: { dateHeader: HolidayDateHeader },
                 dateCellWrapper: (props: { children: React.ReactNode; value: Date }) => (
-                  <DateCellWrapper {...props} leaves={showLeavesInCalendar ? leaves : []} milestones={milestones} />
+                  <DateCellWrapper {...props} leaves={showLeavesInCalendar ? leaves : []} milestones={milestones} typeDefs={milestoneTypes} />
                 ),
               }}
               />
@@ -1191,6 +1253,18 @@ export default function Home() {
                       rows={2}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">ประเภท Event</label>
+                    <select
+                      value={formData.milestoneType}
+                      onChange={(e) => setFormData({ ...formData, milestoneType: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    >
+                      <option value="test">Test Event</option>
+                      <option value="production">Production Event</option>
+                    </select>
                   </div>
 
                   <div>

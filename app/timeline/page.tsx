@@ -18,6 +18,7 @@ interface Milestone {
   date: string
   type: string
   order: number
+  scheduleId: number | null
 }
 
 interface TypeDef {
@@ -81,8 +82,11 @@ export default function TimelinePage() {
     fetchAll()
   }
 
-  const deleteMilestone = async (id: number) => {
-    await fetch(`/api/admin/project-milestones?id=${id}`, { method: 'DELETE' })
+  const deleteMilestone = async (m: Milestone) => {
+    await fetch(`/api/admin/project-milestones?id=${m.id}`, { method: 'DELETE' })
+    if (m.scheduleId) {
+      await fetch(`/api/schedules?id=${m.scheduleId}`, { method: 'DELETE' })
+    }
     fetchAll()
   }
 
@@ -393,7 +397,7 @@ export default function TimelinePage() {
                 {editingMilestone ? 'บันทึก' : 'เพิ่ม'}
               </button>
               {editingMilestone && (
-                <button onClick={() => { deleteMilestone(editingMilestone.id); closeModal() }} className="px-3 py-2 text-red-500 hover:text-red-700 text-sm">
+                <button onClick={() => { deleteMilestone(editingMilestone); closeModal() }} className="px-3 py-2 text-red-500 hover:text-red-700 text-sm">
                   ลบ
                 </button>
               )}

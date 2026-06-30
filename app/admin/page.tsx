@@ -798,6 +798,8 @@ function TypesTab() {
 function GeneralTab() {
   const [settings, setSettings] = useState({ showLeavesInCalendar: 'true' })
   const [savingSettings, setSavingSettings] = useState(false)
+  const [backfilling, setBackfilling] = useState(false)
+  const [backfillResult, setBackfillResult] = useState<string | null>(null)
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -809,6 +811,19 @@ function GeneralTab() {
   }, [])
 
   useEffect(() => { fetchSettings() }, [fetchSettings])
+
+  const runBackfill = async () => {
+    setBackfilling(true)
+    setBackfillResult(null)
+    try {
+      const res = await fetch('/api/admin/project-milestones/backfill', { method: 'POST' })
+      const data = await res.json()
+      setBackfillResult(`สร้าง milestone ใหม่ ${data.created} รายการ`)
+    } catch {
+      setBackfillResult('เกิดข้อผิดพลาด ลองใหม่อีกครั้ง')
+    }
+    setBackfilling(false)
+  }
 
   const saveSettings = async (patch: Partial<typeof settings>) => {
     setSavingSettings(true)
@@ -839,6 +854,19 @@ function GeneralTab() {
         >
           <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${settings.showLeavesInCalendar === 'true' ? 'translate-x-6' : 'translate-x-1'}`} />
         </button>
+      </div>
+
+      <div className="border-t border-gray-100 pt-4">
+        <p className="text-sm font-medium text-gray-700">ซิงค์ข้อมูลเดิมจาก Calendar เข้า Timeline</p>
+        <p className="text-xs text-gray-400 mb-2">สร้าง milestone ให้กับ event เดิมใน calendar ที่ยังไม่เคยแสดงใน Timeline (ตั้งประเภทเป็น Test event)</p>
+        <button
+          onClick={runBackfill}
+          disabled={backfilling}
+          className="px-3 py-1.5 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+        >
+          {backfilling ? 'กำลังซิงค์...' : 'ซิงค์ข้อมูลเดิม'}
+        </button>
+        {backfillResult && <p className="text-xs text-gray-500 mt-2">{backfillResult}</p>}
       </div>
     </div>
   )

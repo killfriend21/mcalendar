@@ -7,6 +7,11 @@
   --background: #FFFFFF;
 }
 
+.dark {
+  --foreground: #F3F4F6;
+  --background: #111827;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
@@ -91,4 +96,85 @@ body {
 
 .rbc-calendar .rbc-date-cell.rbc-off-range span {
   color: #9ca3af !important;
+}
+
+/* React Big Calendar — dark mode */
+.dark .rbc-calendar {
+  color: #E5E7EB;
+}
+
+.dark .rbc-header {
+  color: #9CA3AF;
+  border-bottom: 1px solid #374151;
+}
+
+.dark .rbc-today {
+  background-color: #1e3a5f !important;
+}
+
+.dark .rbc-day-slot .rbc-time-slot {
+  border-top: 1px solid #1F2937;
+}
+
+.dark .rbc-time-content {
+  border-top: 1px solid #374151;
+}
+
+.dark .rbc-time-header-content {
+  border-left: 1px solid #374151;
+}
+
+.dark .rbc-time-view,
+.dark .rbc-month-view {
+  border: 1px solid #374151;
+  background-color: #111827;
+}
+
+.dark .rbc-day-bg,
+.dark .rbc-month-row {
+  background-color: #111827;
+}
+
+.dark .rbc-day-bg + .rbc-day-bg {
+  border-left: 1px solid #374151;
+}
+
+.dark .rbc-month-row + .rbc-month-row {
+  border-top: 1px solid #374151;
+}
+
+.dark .rbc-show-more {
+  color: #60A5FA;
+}
+
+/* Weekend styling (dark) */
+.dark .rbc-saturday,
+.dark .rbc-sunday,
+.dark .rbc-time-header .rbc-saturday,
+.dark .rbc-time-header .rbc-sunday,
+.dark .rbc-month-row .rbc-saturday,
+.dark .rbc-month-row .rbc-sunday {
+  background-color: #1F2937 !important;
+}
+
+/* Off-range days (dark) */
+.dark .rbc-off-range-bg {
+  background-color: #0B1220 !important;
+}
+
+.dark .rbc-calendar .rbc-date-cell.rbc-off-range span {
+  color: #4B5563 !important;
+}
+
+.dark .rbc-agenda-view table.rbc-agenda-table {
+  border-color: #374151;
+  color: #D1D5DB;
+}
+
+.dark .rbc-agenda-view table.rbc-agenda-table thead > tr > th {
+  border-bottom: 1px solid #374151;
+}
+
+.dark .rbc-agenda-view table.rbc-agenda-table tbody > tr > td {
+  border-top: 1px solid #374151;
 }

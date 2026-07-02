@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import moment from 'moment'
+import DarkModeToggle from '@/components/DarkModeToggle'
 
 interface Project {
   id: number
@@ -127,17 +128,18 @@ export default function TimelinePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/" className="text-gray-400 hover:text-gray-600 text-sm">← Calendar</Link>
-          <h1 className="text-lg font-bold text-gray-800">Project Timeline</h1>
+          <Link href="/" className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 text-sm">← Calendar</Link>
+          <h1 className="text-lg font-bold text-gray-800 dark:text-gray-100">Project Timeline</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => setYearOffset(o => o - 1)} className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg">◀ {year - 1}</button>
+        <div className="flex items-center gap-3">
+          <DarkModeToggle />
+          <button onClick={() => setYearOffset(o => o - 1)} className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg">◀ {year - 1}</button>
           <span className="px-4 py-1.5 text-sm font-bold bg-indigo-600 text-white rounded-lg">{year}</span>
-          <button onClick={() => setYearOffset(o => o + 1)} className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg">{year + 1} ▶</button>
+          <button onClick={() => setYearOffset(o => o + 1)} className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg">{year + 1} ▶</button>
         </div>
       </div>
 
@@ -145,7 +147,7 @@ export default function TimelinePage() {
         {/* Month header */}
         <div className="flex mb-2" style={{ paddingLeft: '180px' }}>
           {months.map(m => (
-            <div key={m.format('MM')} className="flex-1 text-center text-xs font-medium text-gray-400 border-l border-gray-200 first:border-l-0 py-1">
+            <div key={m.format('MM')} className="flex-1 text-center text-xs font-medium text-gray-400 dark:text-gray-500 border-l border-gray-200 dark:border-gray-700 first:border-l-0 py-1">
               {m.format('MMM')}
             </div>
           ))}
@@ -159,7 +161,7 @@ export default function TimelinePage() {
                 className="absolute top-0 z-10 pointer-events-none"
                 style={{ left: `${todayPct}%`, transform: 'translateX(-50%)' }}
               >
-                <span className="text-[9px] font-bold text-red-500 bg-white px-0.5 rounded">{today.format('D MMM')}</span>
+                <span className="text-[9px] font-bold text-red-500 dark:text-red-400 bg-white dark:bg-gray-800 px-0.5 rounded">{today.format('D MMM')}</span>
               </div>
             </div>
           </div>
@@ -168,7 +170,7 @@ export default function TimelinePage() {
         {/* Project rows */}
         <div className="flex flex-col gap-0">
           {sortedProjects.length === 0 && (
-            <div className="text-center text-sm text-gray-400 py-12">ยังไม่มี project — ไปเพิ่มที่ <Link href="/admin" className="text-indigo-600 underline">Admin</Link></div>
+            <div className="text-center text-sm text-gray-400 dark:text-gray-500 py-12">ยังไม่มี project — ไปเพิ่มที่ <Link href="/admin" className="text-indigo-600 dark:text-indigo-400 underline">Admin</Link></div>
           )}
           {sortedProjects.map((proj, pi) => {
             const projMilestones = milestones
@@ -179,7 +181,7 @@ export default function TimelinePage() {
             return (
               <div
                 key={proj.id}
-                className={`flex items-center border-b border-gray-100 last:border-b-0 group transition-colors hover:bg-indigo-50 ${pi % 2 === 1 ? 'bg-gray-50' : 'bg-white'}`}
+                className={`flex items-center border-b border-gray-100 dark:border-gray-800 last:border-b-0 group transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-900/30 ${pi % 2 === 1 ? 'bg-gray-50 dark:bg-gray-900' : 'bg-white dark:bg-gray-800'}`}
                 style={{ minHeight: '72px' }}
               >
                 {/* Project label + controls */}
@@ -188,21 +190,21 @@ export default function TimelinePage() {
                     <button
                       onClick={() => moveProject(proj, 'up')}
                       disabled={pi === 0}
-                      className="text-gray-300 hover:text-gray-500 disabled:opacity-20 text-[10px] leading-none"
+                      className="text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 disabled:opacity-20 text-[10px] leading-none"
                     >▲</button>
                     <button
                       onClick={() => moveProject(proj, 'down')}
                       disabled={pi === sortedProjects.length - 1}
-                      className="text-gray-300 hover:text-gray-500 disabled:opacity-20 text-[10px] leading-none"
+                      className="text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 disabled:opacity-20 text-[10px] leading-none"
                     >▼</button>
                   </div>
                   <button
                     onClick={() => openAdd(proj.name)}
-                    className="flex-shrink-0 w-5 h-5 rounded-full border border-indigo-300 bg-indigo-50 hover:bg-indigo-600 text-indigo-500 hover:text-white transition-colors text-xs flex items-center justify-center font-bold leading-none"
+                    className="flex-shrink-0 w-5 h-5 rounded-full border border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-600 text-indigo-500 dark:text-indigo-400 hover:text-white transition-colors text-xs flex items-center justify-center font-bold leading-none"
                     title="เพิ่ม milestone"
                   >+</button>
                   <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: proj.color }} />
-                  <span className="text-sm font-semibold text-gray-700 truncate">{proj.name}</span>
+                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 truncate">{proj.name}</span>
                 </div>
 
                 {/* Timeline track */}
@@ -210,7 +212,7 @@ export default function TimelinePage() {
                   {/* Month grid lines */}
                   <div className="absolute inset-0 flex pointer-events-none">
                     {months.map((m, mi) => (
-                      <div key={mi} className="flex-1 border-l border-gray-100 first:border-l-0 h-full" />
+                      <div key={mi} className="flex-1 border-l border-gray-100 dark:border-gray-800 first:border-l-0 h-full" />
                     ))}
                   </div>
 
@@ -303,7 +305,7 @@ export default function TimelinePage() {
                         />
                         {/* Date below dot */}
                         <div
-                          className="absolute text-[9px] text-gray-400 whitespace-nowrap cursor-pointer"
+                          className="absolute text-[9px] text-gray-400 dark:text-gray-500 whitespace-nowrap cursor-pointer"
                           style={{ bottom: '4px', ...textAlign, zIndex: isGate ? 4 : 3 }}
                           onClick={() => openEdit(m)}
                         >
@@ -320,12 +322,12 @@ export default function TimelinePage() {
                     return (
                       <>
                         {before.length > 0 && (
-                          <div className="absolute left-1 top-1/2 -translate-y-1/2 text-[9px] text-gray-400 z-2">
+                          <div className="absolute left-1 top-1/2 -translate-y-1/2 text-[9px] text-gray-400 dark:text-gray-500 z-2">
                             ◀ {before.length} ก่อนหน้า
                           </div>
                         )}
                         {after.length > 0 && (
-                          <div className="absolute right-1 top-1/2 -translate-y-1/2 text-[9px] text-gray-400 z-2">
+                          <div className="absolute right-1 top-1/2 -translate-y-1/2 text-[9px] text-gray-400 dark:text-gray-500 z-2">
                             {after.length} ถัดไป ▶
                           </div>
                         )}
@@ -339,7 +341,7 @@ export default function TimelinePage() {
         </div>
 
         {/* Legend */}
-        <div className="mt-6 flex items-center gap-4 text-xs text-gray-500">
+        <div className="mt-6 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
           <span className="font-medium">ประเภท:</span>
           {typeDefs.map(t => (
             <span key={t.name} className="flex items-center gap-1">
@@ -362,33 +364,33 @@ export default function TimelinePage() {
       {/* Modal */}
       {(editingMilestone || addingTo) && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={closeModal}>
-          <div className="bg-white rounded-xl shadow-xl p-6 w-80" onClick={e => e.stopPropagation()}>
-            <h3 className="text-sm font-bold text-gray-800 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 w-80" onClick={e => e.stopPropagation()}>
+            <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 mb-4">
               {editingMilestone ? `แก้ไข Milestone` : `เพิ่ม Milestone — ${addingTo}`}
             </h3>
             <div className="flex flex-col gap-3">
               <div>
-                <label className="block text-xs text-gray-500 mb-1">ชื่อ Phase</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">ชื่อ Phase</label>
                 <input
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                   value={form.label}
                   onChange={e => setForm(f => ({ ...f, label: e.target.value }))}
                   placeholder="เช่น Tape Out, CES, RFS"
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">วันที่</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">วันที่</label>
                 <input
                   type="date"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                   value={form.date}
                   onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">ประเภท</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">ประเภท</label>
                 <select
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                   value={form.type}
                   onChange={e => setForm(f => ({ ...f, type: e.target.value }))}
                 >
@@ -403,11 +405,11 @@ export default function TimelinePage() {
                 {editingMilestone ? 'บันทึก' : 'เพิ่ม'}
               </button>
               {editingMilestone && (
-                <button onClick={() => { deleteMilestone(editingMilestone); closeModal() }} className="px-3 py-2 text-red-500 hover:text-red-700 text-sm">
+                <button onClick={() => { deleteMilestone(editingMilestone); closeModal() }} className="px-3 py-2 text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-400 text-sm">
                   ลบ
                 </button>
               )}
-              <button onClick={closeModal} className="px-3 py-2 text-gray-400 hover:text-gray-600 text-sm">
+              <button onClick={closeModal} className="px-3 py-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 text-sm">
                 ยกเลิก
               </button>
             </div>

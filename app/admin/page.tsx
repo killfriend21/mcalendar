@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import ColorPicker from '@/components/ColorPicker'
+import DarkModeToggle from '@/components/DarkModeToggle'
 
 // ─── Types ───────────────────────────────────────────────
 interface Member { id: number; name: string; role: string | null }
@@ -16,11 +17,11 @@ type Tab = 'members' | 'projects' | 'holidays' | 'stocks' | 'types' | 'general'
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-sm mx-4">
         <div className="p-6">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg font-bold text-gray-800">{title}</h2>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">{title}</h2>
+            <button onClick={onClose} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -76,33 +77,33 @@ function MembersTab() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-gray-500">{members.length} คน</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{members.length} คน</p>
         <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
           + เพิ่มสมาชิก
         </button>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         {members.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-10">ยังไม่มีสมาชิก</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-10">ยังไม่มีสมาชิก</p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
               <tr>
-                <th className="text-left px-4 py-3 text-gray-600 font-medium">ชื่อ</th>
-                <th className="text-left px-4 py-3 text-gray-600 font-medium">ตำแหน่ง</th>
+                <th className="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">ชื่อ</th>
+                <th className="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">ตำแหน่ง</th>
                 <th className="px-4 py-3 w-20" />
               </tr>
             </thead>
             <tbody>
               {members.map(m => (
-                <tr key={m.id} className="border-t border-gray-100 hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-800">{m.name}</td>
-                  <td className="px-4 py-3 text-gray-500">{m.role || '—'}</td>
+                <tr key={m.id} className="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900">
+                  <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-100">{m.name}</td>
+                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{m.role || '—'}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2 justify-end">
-                      <button onClick={() => openEdit(m)} className="text-blue-500 hover:text-blue-700 text-xs px-2 py-1 rounded hover:bg-blue-50">แก้ไข</button>
-                      <button onClick={() => del(m.id)} className="text-red-400 hover:text-red-600 text-xs px-2 py-1 rounded hover:bg-red-50">ลบ</button>
+                      <button onClick={() => openEdit(m)} className="text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-400 text-xs px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/30">แก้ไข</button>
+                      <button onClick={() => del(m.id)} className="text-red-400 hover:text-red-600 dark:hover:text-red-400 text-xs px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30">ลบ</button>
                     </div>
                   </td>
                 </tr>
@@ -116,19 +117,19 @@ function MembersTab() {
         <Modal title={editing ? 'แก้ไขสมาชิก' : 'เพิ่มสมาชิก'} onClose={() => setShowModal(false)}>
           <form onSubmit={submit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อ-นามสกุล</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ชื่อ-นามสกุล</label>
               <input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ตำแหน่ง (ถ้ามี)</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ตำแหน่ง (ถ้ามี)</label>
               <input type="text" value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
             </div>
             <div className="flex gap-2 pt-1">
               {editing && (
                 <button type="button" onClick={() => { del(editing.id); setShowModal(false) }}
-                  className="px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-sm">ลบ</button>
+                  className="px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 text-sm">ลบ</button>
               )}
               <button type="submit" className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
                 {editing ? 'บันทึก' : 'เพิ่ม'}
@@ -193,38 +194,38 @@ function ProjectsTab() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-gray-500">{projects.length} โปรเจกต์</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{projects.length} โปรเจกต์</p>
         <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
           + เพิ่มโปรเจกต์
         </button>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         {projects.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-10">ยังไม่มีโปรเจกต์</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-10">ยังไม่มีโปรเจกต์</p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
               <tr>
-                <th className="text-left px-4 py-3 text-gray-600 font-medium">ชื่อโปรเจกต์</th>
-                <th className="text-left px-4 py-3 text-gray-600 font-medium">สี</th>
+                <th className="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">ชื่อโปรเจกต์</th>
+                <th className="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">สี</th>
                 <th className="px-4 py-3 w-20" />
               </tr>
             </thead>
             <tbody>
               {projects.map(p => (
-                <tr key={p.id} className="border-t border-gray-100 hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-800">{p.name}</td>
+                <tr key={p.id} className="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900">
+                  <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-100">{p.name}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-full border border-gray-200" style={{ backgroundColor: p.color }} />
-                      <span className="text-gray-400 text-xs font-mono">{p.color}</span>
+                      <div className="w-5 h-5 rounded-full border border-gray-200 dark:border-gray-700" style={{ backgroundColor: p.color }} />
+                      <span className="text-gray-400 dark:text-gray-500 text-xs font-mono">{p.color}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2 justify-end">
-                      <button onClick={() => openEdit(p)} className="text-blue-500 hover:text-blue-700 text-xs px-2 py-1 rounded hover:bg-blue-50">แก้ไข</button>
-                      <button onClick={() => del(p.id)} className="text-red-400 hover:text-red-600 text-xs px-2 py-1 rounded hover:bg-red-50">ลบ</button>
+                      <button onClick={() => openEdit(p)} className="text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-400 text-xs px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/30">แก้ไข</button>
+                      <button onClick={() => del(p.id)} className="text-red-400 hover:text-red-600 dark:hover:text-red-400 text-xs px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30">ลบ</button>
                     </div>
                   </td>
                 </tr>
@@ -238,18 +239,18 @@ function ProjectsTab() {
         <Modal title={editing ? 'แก้ไขโปรเจกต์' : 'เพิ่มโปรเจกต์'} onClose={() => setShowModal(false)}>
           <form onSubmit={submit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อโปรเจกต์</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ชื่อโปรเจกต์</label>
               <input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">สี</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">สี</label>
               <ColorPicker value={form.color} onChange={color => setForm({ ...form, color })} variant="vivid" />
             </div>
             <div className="flex gap-2 pt-1">
               {editing && (
                 <button type="button" onClick={() => { del(editing.id); setShowModal(false) }}
-                  className="px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-sm">ลบ</button>
+                  className="px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 text-sm">ลบ</button>
               )}
               <button type="submit" className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
                 {editing ? 'บันทึก' : 'เพิ่ม'}
@@ -367,10 +368,10 @@ function HolidaysTab() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <p className="text-sm text-gray-500">{holidays.length} วัน</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{holidays.length} วัน</p>
         <div className="flex gap-2 flex-wrap">
           <button onClick={downloadTemplate}
-            className="text-sm px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
+            className="text-sm px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
             ⬇ Download Template
           </button>
           <label className={`text-sm px-4 py-2 rounded-lg border border-emerald-500 text-emerald-700 hover:bg-emerald-50 cursor-pointer transition-colors ${importing ? 'opacity-50' : ''}`}>
@@ -378,7 +379,7 @@ function HolidaysTab() {
             <input type="file" accept=".csv" onChange={handleImport} className="hidden" disabled={importing} />
           </label>
           {holidays.length > 0 && (
-            <button onClick={clearAll} className="text-sm px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors">
+            <button onClick={clearAll} className="text-sm px-4 py-2 rounded-lg border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
               ลบทั้งหมด
             </button>
           )}
@@ -394,29 +395,29 @@ function HolidaysTab() {
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         {holidays.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-10">ยังไม่มีวันหยุด — Import CSV หรือเพิ่มด้วยตนเอง</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-10">ยังไม่มีวันหยุด — Import CSV หรือเพิ่มด้วยตนเอง</p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
               <tr>
-                <th className="text-left px-4 py-3 text-gray-600 font-medium">วันที่</th>
-                <th className="text-left px-4 py-3 text-gray-600 font-medium">ชื่อวันหยุด</th>
+                <th className="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">วันที่</th>
+                <th className="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">ชื่อวันหยุด</th>
                 <th className="px-4 py-3 w-20" />
               </tr>
             </thead>
             <tbody>
               {holidays.map(h => (
-                <tr key={h.id} className="border-t border-gray-100 hover:bg-gray-50">
-                  <td className="px-4 py-3 text-gray-700 font-mono text-xs">
+                <tr key={h.id} className="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900">
+                  <td className="px-4 py-3 text-gray-700 dark:text-gray-200 font-mono text-xs">
                     {new Date(h.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </td>
-                  <td className="px-4 py-3 text-gray-800">{h.name}</td>
+                  <td className="px-4 py-3 text-gray-800 dark:text-gray-100">{h.name}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2 justify-end">
-                      <button onClick={() => openEdit(h)} className="text-blue-500 hover:text-blue-700 text-xs px-2 py-1 rounded hover:bg-blue-50">แก้ไข</button>
-                      <button onClick={() => del(h.id)} className="text-red-400 hover:text-red-600 text-xs px-2 py-1 rounded hover:bg-red-50">ลบ</button>
+                      <button onClick={() => openEdit(h)} className="text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-400 text-xs px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/30">แก้ไข</button>
+                      <button onClick={() => del(h.id)} className="text-red-400 hover:text-red-600 dark:hover:text-red-400 text-xs px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30">ลบ</button>
                     </div>
                   </td>
                 </tr>
@@ -430,19 +431,19 @@ function HolidaysTab() {
         <Modal title={editing ? 'แก้ไขวันหยุด' : 'เพิ่มวันหยุด'} onClose={() => setShowModal(false)}>
           <form onSubmit={submit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">วันที่</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">วันที่</label>
               <input type="date" required value={form.date} onChange={e => setForm({ ...form, date: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อวันหยุด</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ชื่อวันหยุด</label>
               <input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
             </div>
             <div className="flex gap-2 pt-1">
               {editing && (
                 <button type="button" onClick={() => { del(editing.id); setShowModal(false) }}
-                  className="px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-sm">ลบ</button>
+                  className="px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 text-sm">ลบ</button>
               )}
               <button type="submit" className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
                 {editing ? 'บันทึก' : 'เพิ่ม'}
@@ -538,48 +539,48 @@ function StocksTab() {
   return (
     <div className="space-y-6">
       {/* Stock Feature Settings */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-4">
-        <h3 className="text-sm font-semibold text-gray-700">ตั้งค่า Widget ราคาหุ้น</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 space-y-4">
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">ตั้งค่า Widget ราคาหุ้น</h3>
 
         {/* Enable toggle */}
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-700">แสดง Widget ราคาหุ้น</p>
-            <p className="text-xs text-gray-400">ต้องการ Internet ตลอดเวลา</p>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-200">แสดง Widget ราคาหุ้น</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">ต้องการ Internet ตลอดเวลา</p>
           </div>
           <button
             onClick={handleToggleEnable}
             disabled={savingSettings}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.stockEnabled === 'true' ? 'bg-blue-600' : 'bg-gray-300'}`}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.stockEnabled === 'true' ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'}`}
           >
-            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${settings.stockEnabled === 'true' ? 'translate-x-6' : 'translate-x-1'}`} />
+            <span className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-gray-800 shadow transition-transform ${settings.stockEnabled === 'true' ? 'translate-x-6' : 'translate-x-1'}`} />
           </button>
         </div>
 
         {/* Intervals (only show when enabled) */}
         {settings.stockEnabled === 'true' && (
-          <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-100">
+          <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-100 dark:border-gray-800">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Refresh ราคา (วินาที)</label>
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Refresh ราคา (วินาที)</label>
               <input
                 type="number" min="30" max="3600"
                 value={settings.stockRefreshInterval}
                 onChange={e => setSettings(s => ({ ...s, stockRefreshInterval: e.target.value }))}
                 onBlur={e => saveSettings({ stockRefreshInterval: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               />
-              <p className="text-xs text-gray-400 mt-1">ค่าแนะนำ: 120</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">ค่าแนะนำ: 120</p>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">เปลี่ยน Slide (วินาที)</label>
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">เปลี่ยน Slide (วินาที)</label>
               <input
                 type="number" min="5" max="600"
                 value={settings.stockSlideInterval}
                 onChange={e => setSettings(s => ({ ...s, stockSlideInterval: e.target.value }))}
                 onBlur={e => saveSettings({ stockSlideInterval: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               />
-              <p className="text-xs text-gray-400 mt-1">ค่าแนะนำ: 60</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">ค่าแนะนำ: 60</p>
             </div>
           </div>
         )}
@@ -588,33 +589,33 @@ function StocksTab() {
       {/* Symbol list */}
       <div>
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-gray-500">{stocks.length} หลักทรัพย์</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{stocks.length} หลักทรัพย์</p>
         <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
           + เพิ่มหุ้น
         </button>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         {stocks.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-10">ยังไม่มีหลักทรัพย์ — เพิ่ม Symbol เช่น SICT.BK, PTT.BK</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-10">ยังไม่มีหลักทรัพย์ — เพิ่ม Symbol เช่น SICT.BK, PTT.BK</p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
               <tr>
-                <th className="text-left px-4 py-3 text-gray-600 font-medium">Symbol</th>
-                <th className="text-left px-4 py-3 text-gray-600 font-medium">ชื่อย่อ</th>
+                <th className="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">Symbol</th>
+                <th className="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">ชื่อย่อ</th>
                 <th className="px-4 py-3 w-20" />
               </tr>
             </thead>
             <tbody>
               {stocks.map(s => (
-                <tr key={s.id} className="border-t border-gray-100 hover:bg-gray-50">
-                  <td className="px-4 py-3 font-mono font-bold text-gray-800">{s.symbol}</td>
-                  <td className="px-4 py-3 text-gray-500">{s.label || '—'}</td>
+                <tr key={s.id} className="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900">
+                  <td className="px-4 py-3 font-mono font-bold text-gray-800 dark:text-gray-100">{s.symbol}</td>
+                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{s.label || '—'}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2 justify-end">
-                      <button onClick={() => openEdit(s)} className="text-blue-500 hover:text-blue-700 text-xs px-2 py-1 rounded hover:bg-blue-50">แก้ไข</button>
-                      <button onClick={() => del(s.id)} className="text-red-400 hover:text-red-600 text-xs px-2 py-1 rounded hover:bg-red-50">ลบ</button>
+                      <button onClick={() => openEdit(s)} className="text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-400 text-xs px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/30">แก้ไข</button>
+                      <button onClick={() => del(s.id)} className="text-red-400 hover:text-red-600 dark:hover:text-red-400 text-xs px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30">ลบ</button>
                     </div>
                   </td>
                 </tr>
@@ -623,30 +624,30 @@ function StocksTab() {
           </table>
         )}
       </div>
-      <p className="text-xs text-gray-400 mt-3">ตลาดไทย ใช้ .BK ต่อท้าย เช่น SICT.BK, PTT.BK • ตลาด US เช่น AAPL, TSLA</p>
+      <p className="text-xs text-gray-400 dark:text-gray-500 mt-3">ตลาดไทย ใช้ .BK ต่อท้าย เช่น SICT.BK, PTT.BK • ตลาด US เช่น AAPL, TSLA</p>
 
       {showModal && (
         <Modal title={editing ? 'แก้ไขหลักทรัพย์' : 'เพิ่มหลักทรัพย์'} onClose={() => setShowModal(false)}>
           <form onSubmit={submit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Symbol</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Symbol</label>
               <input type="text" required value={form.symbol}
                 onChange={e => setForm({ ...form, symbol: e.target.value.toUpperCase() })}
                 placeholder="เช่น SICT.BK"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono" />
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อย่อ (ถ้ามี)</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ชื่อย่อ (ถ้ามี)</label>
               <input type="text" value={form.label}
                 onChange={e => setForm({ ...form, label: e.target.value })}
                 placeholder="เช่น SICT"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
             </div>
-            {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+            {error && <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-3 py-2 rounded-lg">{error}</p>}
             <div className="flex gap-2 pt-1">
               {editing && (
                 <button type="button" onClick={() => { del(editing.id); setShowModal(false) }}
-                  className="px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-sm">ลบ</button>
+                  className="px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 text-sm">ลบ</button>
               )}
               <button type="submit" className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
                 {editing ? 'บันทึก' : 'เพิ่ม'}
@@ -703,40 +704,40 @@ function TypesTab() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-gray-500">{types.length} ประเภท</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{types.length} ประเภท</p>
         <button onClick={openAdd} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
           + เพิ่มประเภท
         </button>
       </div>
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         {types.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-10">ยังไม่มีประเภท</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-10">ยังไม่มีประเภท</p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
               <tr>
-                <th className="text-left px-4 py-3 text-gray-600 font-medium">ตัวอย่าง</th>
-                <th className="text-left px-4 py-3 text-gray-600 font-medium">Key</th>
-                <th className="text-left px-4 py-3 text-gray-600 font-medium">ชื่อแสดงผล</th>
-                <th className="text-left px-4 py-3 text-gray-600 font-medium">ความสำคัญ</th>
+                <th className="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">ตัวอย่าง</th>
+                <th className="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">Key</th>
+                <th className="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">ชื่อแสดงผล</th>
+                <th className="text-left px-4 py-3 text-gray-600 dark:text-gray-300 font-medium">ความสำคัญ</th>
                 <th className="px-4 py-3 w-24" />
               </tr>
             </thead>
             <tbody>
               {types.map(t => (
-                <tr key={t.id} className="border-t border-gray-100 hover:bg-gray-50">
+                <tr key={t.id} className="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900">
                   <td className="px-4 py-3">
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold"
                       style={{ background: t.bgColor, color: t.color, border: `1px solid ${t.color}` }}>
                       ● {t.label}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-400 font-mono text-xs">{t.name}</td>
-                  <td className="px-4 py-3 text-gray-700">{t.label}</td>
-                  <td className="px-4 py-3 text-gray-700">{t.priority === 1 ? 'สูง (Gate)' : 'ปกติ'}</td>
+                  <td className="px-4 py-3 text-gray-400 dark:text-gray-500 font-mono text-xs">{t.name}</td>
+                  <td className="px-4 py-3 text-gray-700 dark:text-gray-200">{t.label}</td>
+                  <td className="px-4 py-3 text-gray-700 dark:text-gray-200">{t.priority === 1 ? 'สูง (Gate)' : 'ปกติ'}</td>
                   <td className="px-4 py-3 text-right">
-                    <button onClick={() => openEdit(t)} className="text-blue-600 hover:text-blue-800 text-xs mr-3">แก้ไข</button>
-                    <button onClick={() => del(t.id)} className="text-red-500 hover:text-red-700 text-xs">ลบ</button>
+                    <button onClick={() => openEdit(t)} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-400 text-xs mr-3">แก้ไข</button>
+                    <button onClick={() => del(t.id)} className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-400 text-xs">ลบ</button>
                   </td>
                 </tr>
               ))}
@@ -749,39 +750,39 @@ function TypesTab() {
         <Modal title={editing ? 'แก้ไขประเภท' : 'เพิ่มประเภท'} onClose={() => setShowModal(false)}>
           <form onSubmit={submit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Key (ภาษาอังกฤษ ไม่มีช่องว่าง)</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Key (ภาษาอังกฤษ ไม่มีช่องว่าง)</label>
               <input required value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value.toLowerCase().replace(/\s+/g, '_') }))}
                 placeholder="เช่น gate, production, test"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อแสดงผล</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ชื่อแสดงผล</label>
               <input required value={form.label}
                 onChange={e => setForm(f => ({ ...f, label: e.target.value }))}
                 placeholder="เช่น Gate Event, Production Event"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ความสำคัญ</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ความสำคัญ</label>
               <select value={form.priority} onChange={e => setForm(f => ({ ...f, priority: parseInt(e.target.value) }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                 <option value={1}>สูง — แสดงเด่นใน timeline (Gate)</option>
                 <option value={2}>ปกติ</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">สีหลัก (เส้น / ตัวอักษร)</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">สีหลัก (เส้น / ตัวอักษร)</label>
               <ColorPicker value={form.color} onChange={color => setForm(f => ({ ...f, color }))} variant="vivid" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">สีพื้นหลัง badge</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">สีพื้นหลัง badge</label>
               <ColorPicker value={form.bgColor} onChange={bgColor => setForm(f => ({ ...f, bgColor }))} />
             </div>
             <div className="flex gap-2 pt-1">
               {editing && (
                 <button type="button" onClick={() => { del(editing.id); setShowModal(false) }}
-                  className="px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-sm">ลบ</button>
+                  className="px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 text-sm">ลบ</button>
               )}
               <button type="submit" className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
                 {editing ? 'บันทึก' : 'เพิ่ม'}
@@ -839,26 +840,26 @@ function GeneralTab() {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-4">
-      <h3 className="text-sm font-semibold text-gray-700">ตั้งค่าทั่วไป</h3>
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 space-y-4">
+      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">ตั้งค่าทั่วไป</h3>
 
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-700">แสดงวันลาใน calendar</p>
-          <p className="text-xs text-gray-400">แสดง badge วันลาบนตารางปฏิทิน (เดือน/ไตรมาส)</p>
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-200">แสดงวันลาใน calendar</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">แสดง badge วันลาบนตารางปฏิทิน (เดือน/ไตรมาส)</p>
         </div>
         <button
           onClick={() => saveSettings({ showLeavesInCalendar: settings.showLeavesInCalendar === 'true' ? 'false' : 'true' })}
           disabled={savingSettings}
-          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.showLeavesInCalendar === 'true' ? 'bg-blue-600' : 'bg-gray-300'}`}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings.showLeavesInCalendar === 'true' ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'}`}
         >
-          <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${settings.showLeavesInCalendar === 'true' ? 'translate-x-6' : 'translate-x-1'}`} />
+          <span className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-gray-800 shadow transition-transform ${settings.showLeavesInCalendar === 'true' ? 'translate-x-6' : 'translate-x-1'}`} />
         </button>
       </div>
 
-      <div className="border-t border-gray-100 pt-4">
-        <p className="text-sm font-medium text-gray-700">ซิงค์ข้อมูลเดิมจาก Calendar เข้า Timeline</p>
-        <p className="text-xs text-gray-400 mb-2">สร้าง milestone ให้กับ event เดิมใน calendar ที่ยังไม่เคยแสดงใน Timeline (ตั้งประเภทเป็น Test event)</p>
+      <div className="border-t border-gray-100 dark:border-gray-800 pt-4">
+        <p className="text-sm font-medium text-gray-700 dark:text-gray-200">ซิงค์ข้อมูลเดิมจาก Calendar เข้า Timeline</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">สร้าง milestone ให้กับ event เดิมใน calendar ที่ยังไม่เคยแสดงใน Timeline (ตั้งประเภทเป็น Test event)</p>
         <button
           onClick={runBackfill}
           disabled={backfilling}
@@ -866,7 +867,7 @@ function GeneralTab() {
         >
           {backfilling ? 'กำลังซิงค์...' : 'ซิงค์ข้อมูลเดิม'}
         </button>
-        {backfillResult && <p className="text-xs text-gray-500 mt-2">{backfillResult}</p>}
+        {backfillResult && <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{backfillResult}</p>}
       </div>
     </div>
   )
@@ -886,29 +887,32 @@ export default function AdminPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-8 py-4 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-800">Admin Panel</h1>
-          <p className="text-sm text-gray-500 mt-0.5">จัดการสมาชิก โปรเจกต์ และวันหยุด</p>
+          <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">Admin Panel</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">จัดการสมาชิก โปรเจกต์ และวันหยุด</p>
         </div>
-        <Link href="/" className="text-sm text-blue-600 hover:text-blue-800 transition-colors">
-          ← กลับปฏิทิน
-        </Link>
+        <div className="flex items-center gap-4">
+          <DarkModeToggle />
+          <Link href="/" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-400 transition-colors">
+            ← กลับปฏิทิน
+          </Link>
+        </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-8 py-8">
         {/* Tabs */}
-        <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-6 w-fit">
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl mb-6 w-fit">
           {tabs.map(t => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
               className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${
                 tab === t.key
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-50 shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
               }`}
             >
               {t.label}

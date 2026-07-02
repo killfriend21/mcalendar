@@ -6,6 +6,8 @@ import { Calendar, momentLocalizer, Views, View } from 'react-big-calendar'
 import moment from 'moment'
 import 'moment/locale/th'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
+import { useTheme } from '@/lib/theme'
+import DarkModeToggle from '@/components/DarkModeToggle'
 
 moment.locale('th')
 moment.updateLocale('th', { week: { dow: 1, doy: 4 } }) // ISO 8601: week starts Monday
@@ -265,26 +267,26 @@ function StockWidget({ refreshInterval = 120, slideInterval = 60, compact = fals
 function CustomToolbar({ onNavigate, date }: any) {
   const monthLabel = moment(date).format('MMMM YYYY')
   return (
-    <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
+    <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
       <div className="flex items-center gap-2">
         <button
           onClick={() => onNavigate('PREV')}
-          className="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium transition-colors"
+          className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium transition-colors"
         >
           ← Prev
         </button>
         <button
           onClick={() => onNavigate('NEXT')}
-          className="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium transition-colors"
+          className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium transition-colors"
         >
           Next →
         </button>
       </div>
-      <h3 className="text-lg font-semibold text-gray-800">{monthLabel}</h3>
+      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{monthLabel}</h3>
       <div className="flex items-center gap-2">
         <button
           onClick={() => onNavigate('TODAY')}
-          className="px-3 py-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700 text-sm font-medium transition-colors"
+          className="px-3 py-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 text-blue-700 dark:text-blue-400 text-sm font-medium transition-colors"
         >
           Today
         </button>
@@ -379,13 +381,13 @@ function QuarterToolbar({ currentDate, onPrev, onNext, onToday }: { currentDate:
   const q = Math.floor(currentDate.getMonth() / 3) + 1
   const label = `ไตรมาส ${q}/${start.format('YYYY')} (${start.format('MMM')} – ${end.format('MMM YYYY')})`
   return (
-    <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
+    <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
       <div className="flex items-center gap-2">
-        <button onClick={onPrev} className="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium transition-colors">← Prev</button>
-        <button onClick={onNext} className="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium transition-colors">Next →</button>
+        <button onClick={onPrev} className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium transition-colors">← Prev</button>
+        <button onClick={onNext} className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium transition-colors">Next →</button>
       </div>
-      <h3 className="text-lg font-semibold text-gray-800">{label}</h3>
-      <button onClick={onToday} className="px-3 py-1.5 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700 text-sm font-medium transition-colors">Today</button>
+      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{label}</h3>
+      <button onClick={onToday} className="px-3 py-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 text-blue-700 dark:text-blue-400 text-sm font-medium transition-colors">Today</button>
     </div>
   )
 }
@@ -401,6 +403,8 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
   typeDefs: TypeDef[]
   onSelectDate: (date: Date) => void
 }) {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const startOfGrid = moment(monthStart).startOf('week')
   const endOfGrid = moment(monthStart).endOf('month').endOf('week')
   const days: moment.Moment[] = []
@@ -416,11 +420,11 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
   }
 
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden">
-      <div className="bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700 border-b border-gray-200 text-center">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+      <div className="bg-gray-50 dark:bg-gray-900 px-3 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 text-center">
         {monthStart.format('MMMM YYYY')}
       </div>
-      <div className="grid text-[10px] text-gray-400 border-b border-gray-100" style={{ gridTemplateColumns: '28px repeat(7, 1fr)' }}>
+      <div className="grid text-[10px] text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-gray-800" style={{ gridTemplateColumns: '28px repeat(7, 1fr)' }}>
         <div className="text-center py-1">Wk</div>
         {['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'].map(d => (
           <div key={d} className="text-center py-1">{d}</div>
@@ -428,7 +432,7 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
       </div>
       {weeks.map((week, wi) => (
         <div key={wi} className="grid" style={{ gridTemplateColumns: '28px repeat(7, 1fr)' }}>
-          <div className="flex items-center justify-center text-[11px] font-semibold text-blue-600 border-b border-r border-gray-100 bg-gray-50">
+          <div className="flex items-center justify-center text-[11px] font-semibold text-blue-600 dark:text-blue-400 border-b border-r border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
             {week[0].isoWeek()}
           </div>
           {week.map((day, i) => {
@@ -446,15 +450,15 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
             const dow = day.day()
             const isWeekend = dow === 0 || dow === 6
             const isToday = day.isSame(moment(), 'day')
-            let bg = '#FFFFFF'
-            if (holiday) bg = '#FEE2E2'
-            else if (isWeekend) bg = '#D1D5DB'
-            if (!inMonth) bg = '#E5E7EB'
+            let bg = isDark ? '#1F2937' : '#FFFFFF'
+            if (holiday) bg = isDark ? '#7F1D1D' : '#FEE2E2'
+            else if (isWeekend) bg = isDark ? '#374151' : '#D1D5DB'
+            if (!inMonth) bg = isDark ? '#111827' : '#E5E7EB'
             return (
               <div
                 key={i}
                 onClick={() => onSelectDate(dateObj)}
-                className="border-b border-r border-gray-100 cursor-pointer hover:bg-blue-50 transition-colors overflow-hidden min-w-0 flex flex-col"
+                className="border-b border-r border-gray-100 dark:border-gray-800 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors overflow-hidden min-w-0 flex flex-col"
                 style={{
                   height: '150px',
                   backgroundColor: bg,
@@ -463,7 +467,7 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
                 }}
               >
                 <div className="flex items-center justify-between px-1">
-                  <span className={`text-xs ${isToday ? 'font-bold text-blue-600' : !inMonth ? 'text-gray-300' : 'text-gray-500'}`}>{day.format('D')}</span>
+                  <span className={`text-xs ${isToday ? 'font-bold text-blue-600 dark:text-blue-400' : !inMonth ? 'text-gray-300 dark:text-gray-600' : 'text-gray-500 dark:text-gray-400'}`}>{day.format('D')}</span>
                 </div>
                 <div className="flex flex-col gap-0.5 mt-0.5 flex-1 overflow-hidden">
                   {inMonth && daySchedules.slice(0, 4).map(s => {
@@ -486,7 +490,7 @@ function MonthMiniGrid({ monthStart, getDaySchedules, getDayLeaves, isCompanyHol
                     )
                   })}
                   {inMonth && daySchedules.length > 4 && (
-                    <div className="text-[10px] text-gray-400 px-1">+{daySchedules.length - 4}</div>
+                    <div className="text-[10px] text-gray-400 dark:text-gray-500 px-1">+{daySchedules.length - 4}</div>
                   )}
                 </div>
                 {dayMilestones.map(m => {
@@ -599,6 +603,8 @@ interface ProjectTask {
 }
 
 export default function Home() {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const [schedules, setSchedules] = useState<Schedule[]>([])
   const [loading, setLoading] = useState(true)
   const [stockEnabled, setStockEnabled] = useState(false)
@@ -882,10 +888,10 @@ export default function Home() {
     const isDone = linkedTask?.done === true
     return {
       style: {
-        backgroundColor: isDone ? '#D1D5DB' : color,
+        backgroundColor: isDone ? (isDark ? '#374151' : '#D1D5DB') : color,
         borderColor: isDone ? '#9CA3AF' : color,
         borderRadius: '4px',
-        color: isDone ? '#6B7280' : 'white',
+        color: isDone ? (isDark ? '#9CA3AF' : '#6B7280') : 'white',
         fontSize: '12px',
         opacity: isDone ? 0.75 : 1,
         textDecoration: isDone ? 'line-through' : 'none',
@@ -1029,36 +1035,37 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500">กำลังโหลด...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <p className="text-gray-500 dark:text-gray-400">กำลังโหลด...</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen p-6 bg-gray-50 flex">
+    <div className="min-h-screen p-6 bg-gray-50 dark:bg-gray-900 flex">
       {/* Center column — calendar, full width */}
       <div className="w-[78%] flex flex-col" style={{ height: 'calc(100vh - 3rem)' }}>
         <div className="flex items-center justify-between mb-6 flex-shrink-0">
           <div className="flex items-center gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">ปฏิทินทีม Test</h1>
-              <p className="text-gray-500 text-sm mt-1">จัดการตารางงานของทีม</p>
+              <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">ปฏิทินทีม Test</h1>
+              <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">จัดการตารางงานของทีม</p>
             </div>
             {stockEnabled && (
               <StockWidget compact refreshInterval={stockRefreshInterval} slideInterval={stockSlideInterval} />
             )}
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/timeline" className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+            <DarkModeToggle />
+            <Link href="/timeline" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
               📅 Timeline
             </Link>
-            <Link href="/admin" className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+            <Link href="/admin" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
               ⚙ Admin
             </Link>
             <button
               onClick={() => setCalendarMode(m => m === 'quarter' ? 'month' : 'quarter')}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${calendarMode === 'quarter' ? 'bg-indigo-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${calendarMode === 'quarter' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200'}`}
             >
               ไตรมาส
             </button>
@@ -1074,7 +1081,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex-1 flex flex-col" style={{ minHeight: 0 }}>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 flex-1 flex flex-col" style={{ minHeight: 0 }}>
           {calendarMode === 'quarter' ? (
             <>
               <QuarterToolbar
@@ -1145,9 +1152,9 @@ export default function Home() {
                 const companyHoliday = isCompanyHoliday(date)
                 const style: React.CSSProperties = {}
                 if (companyHoliday) {
-                  style.backgroundColor = '#FEE2E2'
+                  style.backgroundColor = isDark ? '#7F1D1D' : '#FEE2E2'
                 } else if (day === 0 || day === 6) {
-                  style.backgroundColor = '#D1D5DB'
+                  style.backgroundColor = isDark ? '#374151' : '#D1D5DB'
                 }
                 if (moment(date).isSame(new Date(), 'day')) {
                   style.boxShadow = 'inset 0 0 0 2px #F97316'
@@ -1172,10 +1179,10 @@ export default function Home() {
         {/* Modal */}
         {showModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-gray-800">
+                  <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
                     {isEditing ? 'แก้ไขงาน' : 'เพิ่มงานใหม่'}
                   </h2>
                   <button
@@ -1183,7 +1190,7 @@ export default function Home() {
                       setShowModal(false)
                       resetForm()
                     }}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1194,28 +1201,28 @@ export default function Home() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">วันเริ่มต้น</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">วันเริ่มต้น</label>
                       <input
                         type="date"
                         required
                         value={formData.date}
                         onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">วันสิ้นสุด</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">วันสิ้นสุด</label>
                       <input
                         type="date"
                         value={formData.endDate}
                         onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Project</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Project</label>
                     {projects.length > 0 ? (
                       <select
                         required
@@ -1224,7 +1231,7 @@ export default function Home() {
                           const proj = projects.find(p => p.name === e.target.value)
                           setFormData({ ...formData, projectName: e.target.value, color: proj?.color || formData.color })
                         }}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-800"
                       >
                         <option value="">-- เลือกโปรเจกต์ --</option>
                         {projects.map(p => (
@@ -1238,29 +1245,29 @@ export default function Home() {
                         value={formData.projectName}
                         onChange={(e) => setFormData({ ...formData, projectName: e.target.value })}
                         placeholder="เช่น Project A"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       />
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">เพื่องาน</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">เพื่องาน</label>
                     <textarea
                       required
                       value={formData.notes}
                       onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                       placeholder="ระบุงานที่ต้องทำ"
                       rows={2}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">ประเภท Event</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ประเภท Event</label>
                     <select
                       value={formData.milestoneType}
                       onChange={(e) => setFormData({ ...formData, milestoneType: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     >
                       <option value="test">Test Event</option>
                       <option value="production">Production Event</option>
@@ -1268,7 +1275,7 @@ export default function Home() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">จำนวนคน (สูงสุด 4 คน)</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">จำนวนคน (สูงสุด 4 คน)</label>
                     <input
                       type="number"
                       required
@@ -1280,12 +1287,12 @@ export default function Home() {
                         setFormData({ ...formData, peopleCount: val.toString() })
                       }}
                       placeholder="1-4"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">รายชื่อ</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">รายชื่อ</label>
                     <div className="space-y-2">
                       {Array.from({ length: parseInt(formData.peopleCount) || 1 }, (_, i) => {
                         const membersArray = formData.members ? formData.members.split(',') : []
@@ -1299,7 +1306,7 @@ export default function Home() {
                               arr[i] = e.target.value
                               setFormData({ ...formData, members: arr.join(',') })
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-800"
                           >
                             <option value="">-- เลือกชื่อ --</option>
                             {teamMembers.map(m => (
@@ -1318,7 +1325,7 @@ export default function Home() {
                               setFormData({ ...formData, members: arr.join(',') })
                             }}
                             placeholder={`ชื่อคนที่ ${i + 1}`}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                           />
                         )
                       })}
@@ -1330,7 +1337,7 @@ export default function Home() {
                       <button
                         type="button"
                         onClick={handleDelete}
-                        className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                       >
                         ลบ
                       </button>
@@ -1351,21 +1358,21 @@ export default function Home() {
 
       {/* Right column 22% — project tasks 80% / leave table 20% */}
       <div className="w-[22%] pl-4 pt-1 flex flex-col" style={{ height: 'calc(100vh - 3rem)', gap: '12px' }}>
-        <div className="flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden" style={{ flex: '4 1 0', minHeight: 0 }}>
-          <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+        <div className="flex flex-col bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden" style={{ flex: '4 1 0', minHeight: 0 }}>
+          <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-bold text-gray-700">Project Tasks</h2>
-              <p className="text-xs text-gray-400 mt-0.5">{moment(currentDate).format('MMMM YYYY')}</p>
+              <h2 className="text-sm font-bold text-gray-700 dark:text-gray-200">Project Tasks</h2>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{moment(currentDate).format('MMMM YYYY')}</p>
             </div>
             <div className="flex gap-1 items-center">
               <button
                 onClick={() => setCollapsedProjects(new Set([...new Set(projectTasks.map(t => t.projectName))]))}
-                className="text-xs text-gray-400 hover:text-gray-600 px-1 py-1"
+                className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 px-1 py-1"
                 title="Fold all"
               >▶▶</button>
               <button
                 onClick={() => setCollapsedProjects(new Set())}
-                className="text-xs text-gray-400 hover:text-gray-600 px-1 py-1"
+                className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 px-1 py-1"
                 title="Unfold all"
               >▼▼</button>
               <button onClick={openAddTask} className="text-xs bg-indigo-600 text-white px-2 py-1 rounded-lg hover:bg-indigo-700 transition-colors">+ เพิ่ม</button>
@@ -1374,8 +1381,8 @@ export default function Home() {
           <div className="flex-1 overflow-y-auto">
             {projectTasks.filter(t => t.parentId === null && visibleMonths.includes(t.month)).length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center px-4">
-                <p className="text-sm text-gray-400">ยังไม่มีงาน</p>
-                <button onClick={openAddTask} className="mt-3 text-xs text-indigo-600 hover:underline">+ เพิ่มงานแรก</button>
+                <p className="text-sm text-gray-400 dark:text-gray-500">ยังไม่มีงาน</p>
+                <button onClick={openAddTask} className="mt-3 text-xs text-indigo-600 dark:text-indigo-400 hover:underline">+ เพิ่มงานแรก</button>
               </div>
             ) : (
               (() => {
@@ -1390,17 +1397,17 @@ export default function Home() {
                   return (
                     <div key={t.id}>
                       <div
-                        className="flex items-center gap-1 py-1.5 group border-b border-gray-50 last:border-b-0"
+                        className="flex items-center gap-1 py-1.5 group border-b border-gray-50 dark:border-gray-900 last:border-b-0"
                         style={{ paddingLeft: `${depth * 12}px` }}
                       >
                         <button
                           type="button"
                           onClick={toggleTaskCollapse}
-                          className={`text-gray-300 hover:text-gray-500 text-[8px] w-3 flex-shrink-0 leading-none ${children.length === 0 ? 'invisible' : ''}`}
+                          className={`text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 text-[8px] w-3 flex-shrink-0 leading-none ${children.length === 0 ? 'invisible' : ''}`}
                         >{isCollapsed ? '▶' : '▼'}</button>
                         <div className="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                          <button onClick={() => moveTask(t, 'up')} disabled={idx === 0} className="text-gray-300 hover:text-gray-500 disabled:opacity-20 leading-none text-[9px]">▲</button>
-                          <button onClick={() => moveTask(t, 'down')} disabled={idx === siblings.length - 1} className="text-gray-300 hover:text-gray-500 disabled:opacity-20 leading-none text-[9px]">▼</button>
+                          <button onClick={() => moveTask(t, 'up')} disabled={idx === 0} className="text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 disabled:opacity-20 leading-none text-[9px]">▲</button>
+                          <button onClick={() => moveTask(t, 'down')} disabled={idx === siblings.length - 1} className="text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 disabled:opacity-20 leading-none text-[9px]">▼</button>
                         </div>
                         <input
                           type="checkbox"
@@ -1410,9 +1417,9 @@ export default function Home() {
                         />
                         <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setViewingTask(t)}>
                           <div className="flex items-center gap-1.5 min-w-0">
-                            <span className={`text-sm truncate hover:text-indigo-600 ${t.done ? 'line-through text-gray-400' : 'text-gray-700'}`}>{t.title}</span>
+                            <span className={`text-sm truncate hover:text-indigo-600 dark:hover:text-indigo-400 ${t.done ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-200'}`}>{t.title}</span>
                             {children.length > 0 && (
-                              <span className={`text-[9px] font-medium px-1 rounded flex-shrink-0 ${children.filter(c => c.done).length === children.length ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'}`}>
+                              <span className={`text-[9px] font-medium px-1 rounded flex-shrink-0 ${children.filter(c => c.done).length === children.length ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
                                 {children.filter(c => c.done).length}/{children.length}
                               </span>
                             )}
@@ -1420,7 +1427,7 @@ export default function Home() {
                           {(() => {
                             const sched = t.scheduleId ? schedules.find(s => s.id === t.scheduleId) : null
                             const overdue = !t.done && (sched ? sched.endDate && new Date(sched.endDate) < new Date() : t.dueDate && new Date(t.dueDate) < new Date())
-                            const cls = `text-[10px] ${t.done ? 'text-gray-300' : overdue ? 'text-red-500 font-semibold' : 'text-gray-400'}`
+                            const cls = `text-[10px] ${t.done ? 'text-gray-300 dark:text-gray-600' : overdue ? 'text-red-500 dark:text-red-400 font-semibold' : 'text-gray-400 dark:text-gray-500'}`
                             if (sched) {
                               const start = moment(sched.date).format('D MMM YY')
                               const end = sched.endDate ? moment(sched.endDate).format('D MMM YY') : null
@@ -1431,9 +1438,9 @@ export default function Home() {
                           })()}
                         </div>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                          <button onClick={() => openAddSubTask(t)} className="text-green-400 hover:text-green-600 text-xs" title="เพิ่ม subtask">+</button>
-                          <button onClick={() => openEditTask(t)} className="text-blue-400 hover:text-blue-600 text-xs">✎</button>
-                          <button onClick={() => deleteTask(t.id)} className="text-red-400 hover:text-red-600 text-xs">✕</button>
+                          <button onClick={() => openAddSubTask(t)} className="text-green-400 hover:text-green-600 dark:hover:text-green-400 text-xs" title="เพิ่ม subtask">+</button>
+                          <button onClick={() => openEditTask(t)} className="text-blue-400 hover:text-blue-600 dark:hover:text-blue-400 text-xs">✎</button>
+                          <button onClick={() => deleteTask(t.id)} className="text-red-400 hover:text-red-600 dark:hover:text-red-400 text-xs">✕</button>
                         </div>
                       </div>
                       {!isCollapsed && children.map((c, ci) => renderTaskNode(c, children, ci, depth + 1))}
@@ -1461,25 +1468,25 @@ export default function Home() {
                   })
                   const sortedRoots = rootTasks.sort((a, b) => a.order - b.order)
                   return (
-                    <div key={proj} className="border-b border-gray-100 last:border-b-0">
-                      <div className="px-4 py-2 flex items-center justify-between transition-colors bg-gray-50">
+                    <div key={proj} className="border-b border-gray-100 dark:border-gray-800 last:border-b-0">
+                      <div className="px-4 py-2 flex items-center justify-between transition-colors bg-gray-50 dark:bg-gray-900">
                         <button
                           type="button"
                           onClick={toggleCollapse}
                           className="flex items-center gap-2 flex-1 min-w-0 text-left"
                         >
                           <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: projColor }} />
-                          <span className="text-sm font-semibold text-gray-700 truncate">{proj}</span>
+                          <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 truncate">{proj}</span>
                         </button>
                         <div className="flex items-center gap-2 flex-shrink-0">
-                          <span className="text-xs text-gray-400">{doneCount}/{allProjTasks.length}</span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">{doneCount}/{allProjTasks.length}</span>
                           <button
                             type="button"
                             onClick={() => { setEditingTask(null); setTaskForm({ projectName: proj, title: '', month: currentMonth, dueDate: '', parentId: null }); setShowTaskModal(true) }}
-                            className="w-5 h-5 flex items-center justify-center rounded bg-indigo-100 hover:bg-indigo-200 text-indigo-600 text-xs font-bold leading-none"
+                            className="w-5 h-5 flex items-center justify-center rounded bg-indigo-100 dark:bg-indigo-900/30 hover:bg-indigo-200 text-indigo-600 dark:text-indigo-400 text-xs font-bold leading-none"
                             title="เพิ่มงาน"
                           >+</button>
-                          <span className="text-gray-400 text-xs cursor-pointer" onClick={toggleCollapse}>{collapsed ? '▶' : '▼'}</span>
+                          <span className="text-gray-400 dark:text-gray-500 text-xs cursor-pointer" onClick={toggleCollapse}>{collapsed ? '▶' : '▼'}</span>
                         </div>
                       </div>
                       {!collapsed && (
@@ -1496,22 +1503,22 @@ export default function Home() {
         </div>
 
         {/* Leave table 20% */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col overflow-hidden" style={{ flex: '1 1 0', minHeight: 0 }}>
-          <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
-            <h2 className="text-sm font-bold text-gray-700">ตารางลา</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col overflow-hidden" style={{ flex: '1 1 0', minHeight: 0 }}>
+          <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between flex-shrink-0">
+            <h2 className="text-sm font-bold text-gray-700 dark:text-gray-200">ตารางลา</h2>
             <button onClick={openAddLeave} className="text-xs bg-blue-600 text-white px-2 py-1 rounded-lg hover:bg-blue-700 transition-colors">
               + เพิ่ม
             </button>
           </div>
           <div className="flex-1 overflow-y-auto">
             {visibleLeaves.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-6">ไม่มีข้อมูล</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-6">ไม่มีข้อมูล</p>
             ) : (
               <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-gray-50">
+                <thead className="sticky top-0 bg-gray-50 dark:bg-gray-900">
                   <tr>
-                    <th className="text-left px-3 py-2 text-gray-500 font-medium" style={{ width: '55%' }}>ชื่อ</th>
-                    <th className="text-left px-3 py-2 text-gray-500 font-medium" style={{ width: '35%' }}>วันที่</th>
+                    <th className="text-left px-3 py-2 text-gray-500 dark:text-gray-400 font-medium" style={{ width: '55%' }}>ชื่อ</th>
+                    <th className="text-left px-3 py-2 text-gray-500 dark:text-gray-400 font-medium" style={{ width: '35%' }}>วันที่</th>
                     <th className="px-2 py-2" style={{ width: '10%' }} />
                   </tr>
                 </thead>
@@ -1519,18 +1526,18 @@ export default function Home() {
                   {[...visibleLeaves].sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).map(leave => {
                     const isPast = new Date(leave.endDate) < new Date(new Date().setHours(0,0,0,0))
                     return (
-                      <tr key={leave.id} className="border-t border-gray-50 hover:bg-gray-50 group">
-                        <td className={`px-3 py-2.5 font-medium truncate max-w-[80px] ${isPast ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                      <tr key={leave.id} className="border-t border-gray-50 dark:border-gray-900 hover:bg-gray-50 dark:hover:bg-gray-900 group">
+                        <td className={`px-3 py-2.5 font-medium truncate max-w-[80px] ${isPast ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-100'}`}>
                           {leave.name}
                         </td>
-                        <td className={`px-3 py-2.5 ${isPast ? 'line-through text-gray-400' : 'text-gray-500'}`}>
+                        <td className={`px-3 py-2.5 ${isPast ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-500 dark:text-gray-400'}`}>
                           {moment(leave.startDate).format('D MMM')}
                           {leave.startDate !== leave.endDate ? ` – ${moment(leave.endDate).format('D MMM')}` : ''}
                         </td>
                         <td className="px-2 py-2.5">
                           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => openEditLeave(leave)} className="text-blue-500 hover:text-blue-700">✎</button>
-                            <button onClick={() => deleteLeave(leave.id)} className="text-red-400 hover:text-red-600">✕</button>
+                            <button onClick={() => openEditLeave(leave)} className="text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-400">✎</button>
+                            <button onClick={() => deleteLeave(leave.id)} className="text-red-400 hover:text-red-600 dark:hover:text-red-400">✕</button>
                           </div>
                         </td>
                       </tr>
@@ -1546,13 +1553,13 @@ export default function Home() {
       {/* Leave Modal */}
       {showLeaveModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-sm mx-4">
             <div className="p-6">
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-lg font-bold text-gray-800">
+                <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">
                   {editingLeave ? 'แก้ไขการลา' : 'เพิ่มการลา'}
                 </h2>
-                <button onClick={() => setShowLeaveModal(false)} className="text-gray-400 hover:text-gray-600">
+                <button onClick={() => setShowLeaveModal(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -1560,13 +1567,13 @@ export default function Home() {
               </div>
               <form onSubmit={submitLeave} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อ</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">ชื่อ</label>
                   {teamMembers.length > 0 ? (
                     <select
                       required
                       value={leaveForm.name}
                       onChange={e => setLeaveForm({ ...leaveForm, name: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800"
                     >
                       <option value="">-- เลือกชื่อ --</option>
                       {teamMembers.map(m => (
@@ -1580,29 +1587,29 @@ export default function Home() {
                       value={leaveForm.name}
                       onChange={e => setLeaveForm({ ...leaveForm, name: e.target.value })}
                       placeholder="ชื่อ-นามสกุล"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     />
                   )}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">วันที่เริ่ม</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">วันที่เริ่ม</label>
                     <input
                       type="date"
                       required
                       value={leaveForm.startDate}
                       onChange={e => setLeaveForm({ ...leaveForm, startDate: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">วันสิ้นสุด</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">วันสิ้นสุด</label>
                     <input
                       type="date"
                       required
                       value={leaveForm.endDate}
                       onChange={e => setLeaveForm({ ...leaveForm, endDate: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     />
                   </div>
                 </div>
@@ -1611,7 +1618,7 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => { deleteLeave(editingLeave.id); setShowLeaveModal(false) }}
-                      className="px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors text-sm"
+                      className="px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors text-sm"
                     >
                       ลบ
                     </button>
@@ -1632,16 +1639,16 @@ export default function Home() {
       {/* Task Modal */}
       {showTaskModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-sm mx-4">
             <div className="p-6">
               <div className="flex items-center justify-between mb-5">
                 <div>
-                  <h2 className="text-lg font-bold text-gray-800">{editingTask ? 'แก้ไขงาน' : taskForm.parentId ? 'เพิ่ม Subtask' : 'เพิ่มงาน'}</h2>
+                  <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">{editingTask ? 'แก้ไขงาน' : taskForm.parentId ? 'เพิ่ม Subtask' : 'เพิ่มงาน'}</h2>
                   {taskForm.parentId && !editingTask && (
-                    <p className="text-xs text-gray-400 mt-0.5">↳ {projectTasks.find(t => t.id === taskForm.parentId)?.title}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">↳ {projectTasks.find(t => t.id === taskForm.parentId)?.title}</p>
                   )}
                 </div>
-                <button onClick={() => setShowTaskModal(false)} className="text-gray-400 hover:text-gray-600">
+                <button onClick={() => setShowTaskModal(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -1650,13 +1657,13 @@ export default function Home() {
               <form onSubmit={submitTask} className="space-y-4">
                 {!taskForm.parentId && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">โปรเจกต์</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">โปรเจกต์</label>
                     {projects.length > 0 ? (
                       <select
                         required
                         value={taskForm.projectName}
                         onChange={e => setTaskForm({ ...taskForm, projectName: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-gray-800"
                       >
                         <option value="">-- เลือกโปรเจกต์ --</option>
                         {projects.map(p => (
@@ -1670,40 +1677,40 @@ export default function Home() {
                         value={taskForm.projectName}
                         onChange={e => setTaskForm({ ...taskForm, projectName: e.target.value })}
                         placeholder="ชื่อโปรเจกต์"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       />
                     )}
                   </div>
                 )}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">งาน / Deliverable</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">งาน / Deliverable</label>
                   <textarea
                     required
                     rows={3}
                     value={taskForm.title}
                     onChange={e => setTaskForm({ ...taskForm, title: e.target.value })}
                     placeholder="เช่น ส่ง Report ลูกค้า"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none resize-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">เดือนที่ต้องปิด</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">เดือนที่ต้องปิด</label>
                     <input
                       type="month"
                       required
                       value={taskForm.month}
                       onChange={e => setTaskForm({ ...taskForm, month: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">กำหนดเสร็จ</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">กำหนดเสร็จ</label>
                     <input
                       type="date"
                       value={taskForm.dueDate}
                       onChange={e => setTaskForm({ ...taskForm, dueDate: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     />
                   </div>
                 </div>
@@ -1712,7 +1719,7 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => { deleteTask(editingTask.id); setShowTaskModal(false) }}
-                      className="px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-sm"
+                      className="px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 text-sm"
                     >ลบ</button>
                   )}
                   <button type="submit" className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm">
@@ -1741,18 +1748,18 @@ export default function Home() {
             const kids = projectTasks.filter(c => c.parentId === t.id).sort((a, b) => a.order - b.order)
             return (
               <div key={t.id} style={{ paddingLeft: `${depth * 16}px` }}>
-                <div className="flex items-center gap-2 py-1 border-b border-gray-50">
+                <div className="flex items-center gap-2 py-1 border-b border-gray-50 dark:border-gray-900">
                   <input
                     type="checkbox"
                     checked={t.done}
                     onChange={() => toggleTask(t)}
                     className="flex-shrink-0 w-3.5 h-3.5 cursor-pointer accent-indigo-600"
                   />
-                  <span className={`text-sm flex-1 ${t.done ? 'line-through text-gray-400' : 'text-gray-700'}`}>{t.title}</span>
+                  <span className={`text-sm flex-1 ${t.done ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-200'}`}>{t.title}</span>
                   {(() => {
                     const sched = t.scheduleId ? schedules.find(s => s.id === t.scheduleId) : null
                     const overdue = !t.done && (sched ? sched.endDate && new Date(sched.endDate) < new Date() : t.dueDate && new Date(t.dueDate) < new Date())
-                    const cls = `text-[10px] flex-shrink-0 ${t.done ? 'text-gray-300' : overdue ? 'text-red-500 font-semibold' : 'text-gray-400'}`
+                    const cls = `text-[10px] flex-shrink-0 ${t.done ? 'text-gray-300 dark:text-gray-600' : overdue ? 'text-red-500 dark:text-red-400 font-semibold' : 'text-gray-400 dark:text-gray-500'}`
                     if (sched) {
                       const start = moment(sched.date).format('D MMM YY')
                       const end = sched.endDate ? moment(sched.endDate).format('D MMM YY') : null
@@ -1769,17 +1776,17 @@ export default function Home() {
 
         return (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setViewingTask(null)}>
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
-              <div className="p-5 border-b border-gray-100">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md mx-4 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+              <div className="p-5 border-b border-gray-100 dark:border-gray-800">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: projColor }} />
-                      <span className="text-xs text-gray-500">{viewingTask.projectName}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{viewingTask.projectName}</span>
                     </div>
-                    <h2 className={`text-lg font-bold ${viewingTask.done ? 'line-through text-gray-400' : 'text-gray-800'}`}>{viewingTask.title}</h2>
+                    <h2 className={`text-lg font-bold ${viewingTask.done ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-100'}`}>{viewingTask.title}</h2>
                   </div>
-                  <button onClick={() => setViewingTask(null)} className="text-gray-400 hover:text-gray-600 flex-shrink-0">
+                  <button onClick={() => setViewingTask(null)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -1788,12 +1795,12 @@ export default function Home() {
                 {viewingTask.members && (
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {viewingTask.members.split(',').map((m, i) => (
-                      <span key={i} className="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full">{m.trim()}</span>
+                      <span key={i} className="text-xs bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 px-2 py-0.5 rounded-full">{m.trim()}</span>
                     ))}
                   </div>
                 )}
                 <div className="flex flex-wrap gap-2 mt-3">
-                  <span className="text-xs text-gray-500">📅 {moment(viewingTask.month).format('MMM YYYY')}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">📅 {moment(viewingTask.month).format('MMM YYYY')}</span>
                   {(() => {
                     const linkedSched = viewingTask.scheduleId ? schedules.find(s => s.id === viewingTask.scheduleId) : null
                     if (linkedSched) {
@@ -1801,7 +1808,7 @@ export default function Home() {
                       const end = linkedSched.endDate ? moment(linkedSched.endDate).format('D MMM YYYY') : null
                       const overdue = !viewingTask.done && linkedSched.endDate && new Date(linkedSched.endDate) < new Date()
                       return (
-                        <span className={`text-xs ${overdue ? 'text-red-500 font-semibold' : 'text-gray-500'}`}>
+                        <span className={`text-xs ${overdue ? 'text-red-500 dark:text-red-400 font-semibold' : 'text-gray-500 dark:text-gray-400'}`}>
                           ⏰ {start}{end && end !== start ? ` → ${end}` : ''}
                         </span>
                       )
@@ -1809,18 +1816,18 @@ export default function Home() {
                     if (viewingTask.dueDate) {
                       const overdue = !viewingTask.done && new Date(viewingTask.dueDate) < new Date()
                       return (
-                        <span className={`text-xs ${overdue ? 'text-red-500 font-semibold' : 'text-gray-500'}`}>
+                        <span className={`text-xs ${overdue ? 'text-red-500 dark:text-red-400 font-semibold' : 'text-gray-500 dark:text-gray-400'}`}>
                           ⏰ {moment(viewingTask.dueDate).format('D MMM YYYY')}
                         </span>
                       )
                     }
                     return null
                   })()}
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${viewingTask.done ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${viewingTask.done ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'}`}>
                     {viewingTask.done ? '✓ เสร็จแล้ว' : 'กำลังทำ'}
                   </span>
                   {descendants.length > 0 && (
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${doneDesc === descendants.length ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'}`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${doneDesc === descendants.length ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
                       subtask {doneDesc}/{descendants.length}
                     </span>
                   )}
@@ -1828,18 +1835,18 @@ export default function Home() {
               </div>
               {directChildren.length > 0 && (
                 <div className="flex-1 overflow-y-auto p-4">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Subtasks</p>
+                  <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">Subtasks</p>
                   {renderSubTree(directChildren, 0)}
                 </div>
               )}
-              <div className="p-4 border-t border-gray-100 flex gap-2">
+              <div className="p-4 border-t border-gray-100 dark:border-gray-800 flex gap-2">
                 <button
                   onClick={() => { setViewingTask(null); openEditTask(viewingTask) }}
-                  className="flex-1 text-sm px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
+                  className="flex-1 text-sm px-3 py-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/30"
                 >✎ แก้ไข</button>
                 <button
                   onClick={() => { setViewingTask(null); openAddSubTask(viewingTask) }}
-                  className="flex-1 text-sm px-3 py-2 rounded-lg bg-green-50 text-green-700 hover:bg-green-100"
+                  className="flex-1 text-sm px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30"
                 >+ เพิ่ม Subtask</button>
               </div>
             </div>

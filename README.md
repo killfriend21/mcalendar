@@ -25,6 +25,9 @@
 - **สถานะ Milestone** — เพิ่ม/ลบ/แก้ไข status option พร้อมสีที่กำหนดเอง
 - **ทั่วไป** — ตั้งค่าระบบ
 
+### Integration กับ homer-web (Team Hub)
+เมื่อเพิ่ม milestone หรือ project task ใหม่ (เฉพาะ task หลัก ไม่รวม subtask) ระบบจะ push เข้า homer-web dashboard ให้อัตโนมัติเป็น News/Task — ดู [`lib/homerSync.ts`](lib/homerSync.ts) ยืนยันตัวตนด้วย shared API key (`HOMER_WEB_API_KEY`) ถ้า sync พลาด (เช่น homer-web offline) จะไม่กระทบการทำงานปกติของ mcalendar เลย แค่ log error ไว้เฉยๆ
+
 ## Tech Stack
 
 - **Framework**: Next.js 14 (App Router, TypeScript)
@@ -44,6 +47,11 @@ docker compose up -d --build
 
 ```env
 DATABASE_URL=postgresql://factory_user:factory_password@db:5432/factory_calendar
+
+# homer-web integration: new milestones/tasks get synced there as News/Tasks.
+# Leave blank to disable syncing. Must match homer-web's INTEGRATION_API_KEY.
+HOMER_WEB_URL=http://localhost:8922
+HOMER_WEB_API_KEY=
 ```
 
 ## Database Schema

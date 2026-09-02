@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { syncTaskToHomer } from '@/lib/homerSync'
 
 export async function GET() {
   try {
@@ -33,6 +34,9 @@ export async function POST(req: NextRequest) {
         scheduleId: body.scheduleId ?? null,
       },
     })
+    if (parentId === null) {
+      await syncTaskToHomer(task)
+    }
     return NextResponse.json(task)
   } catch {
     return NextResponse.json({ error: 'DB error' }, { status: 500 })

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { syncMilestoneToNews } from '@/lib/homerSync'
 
 export async function GET() {
   const milestones = await prisma.projectMilestone.findMany({ orderBy: [{ projectName: 'asc' }, { order: 'asc' }] })
@@ -18,6 +19,7 @@ export async function POST(req: Request) {
       scheduleId: body.scheduleId ?? null,
     },
   })
+  await syncMilestoneToNews(milestone)
   return NextResponse.json(milestone)
 }
 

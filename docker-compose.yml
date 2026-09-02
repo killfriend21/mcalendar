@@ -38,6 +38,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://factory_user:factory_password@db:5432/factory_calendar?schema=public
       - NODE_ENV=production
+      - HOMER_WEB_URL=${HOMER_WEB_URL:-http://localhost:8922}
+      - HOMER_WEB_API_KEY=${HOMER_WEB_API_KEY:-}
     depends_on:
       db:
         condition: service_healthy
